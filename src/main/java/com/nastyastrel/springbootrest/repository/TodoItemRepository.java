@@ -1,11 +1,15 @@
 package com.nastyastrel.springbootrest.repository;
 
-import com.nastyastrel.springbootrest.entity.todo.TodoItem;
+import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface TodoItemRepository extends CrudRepository<TodoItem, Integer> {
-    Iterable<TodoItem> findTodoItemByDescriptionContainsOrderBySerialNumberAsc(String wordToBeFound);
+    List<TodoItem> findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(String description, Long todoItemOwner);
 
-    Iterable<TodoItem> findAllByOrderBySerialNumberAsc();
+    List<TodoItem> findAllByTodoItemOwnerEquals(Long todoItemOwner);
+
+    Optional<TodoItem> deleteTodoItemBySerialNumber(int serialNumber);
 }

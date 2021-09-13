@@ -1,13 +1,12 @@
-package com.nastyastrel.springbootrest.entity.todo;
+package com.nastyastrel.springbootrest.model.todo;
 
-import com.nastyastrel.springbootrest.entity.todo.TaskState;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "todo")
+@Table(name = "todo_items")
 public class TodoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,14 +24,19 @@ public class TodoItem {
     @CreationTimestamp
     private LocalDateTime creationDate;
 
+    @Column(name = "item_owner")
+    private Long todoItemOwner;
+
+
     public TodoItem() {
     }
 
-    public TodoItem(int serialNumber, String description, TaskState state, LocalDateTime creationDate) {
+    public TodoItem(int serialNumber, String description, TaskState state, LocalDateTime creationDate, Long todoItemOwner) {
         this.serialNumber = serialNumber;
         this.description = description;
         this.state = state;
         this.creationDate = creationDate;
+        this.todoItemOwner = todoItemOwner;
     }
 
     public int getSerialNumber() {
@@ -66,4 +70,13 @@ public class TodoItem {
     public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
     }
+
+    public Long getTodoItemOwner() {
+        return todoItemOwner;
+    }
+
+    public void setTodoItemOwner(Long todoItemOwner) {
+        this.todoItemOwner = todoItemOwner;
+    }
+
 }
