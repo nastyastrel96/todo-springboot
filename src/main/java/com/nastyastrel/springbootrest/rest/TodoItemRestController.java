@@ -45,7 +45,6 @@ public class TodoItemRestController {
 
     @PatchMapping("/todos/{number}")
     public ResponseEntity<TodoItem> changeStateToDone(@PathVariable int number) {
-        User authenticatedUser = userService.definePrincipal();
         if (todoItemService.changeStateToDone(number).isPresent()) {
             todoItemService.changeStateToDone(number);
             return new ResponseEntity<>(HttpStatus.OK);
