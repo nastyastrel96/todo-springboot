@@ -11,7 +11,7 @@ public class TodoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "serial_number")
-    private int serialNumber;
+    private Long serialNumber;
 
     @Column(name = "description")
     private String description;
@@ -31,7 +31,7 @@ public class TodoItem {
     public TodoItem() {
     }
 
-    public TodoItem(int serialNumber, String description, TaskState state, LocalDateTime creationDate, Long todoItemOwner) {
+    public TodoItem(Long serialNumber, String description, TaskState state, LocalDateTime creationDate, Long todoItemOwner) {
         this.serialNumber = serialNumber;
         this.description = description;
         this.state = state;
@@ -39,11 +39,11 @@ public class TodoItem {
         this.todoItemOwner = todoItemOwner;
     }
 
-    public int getSerialNumber() {
+    public Long getSerialNumber() {
         return serialNumber;
     }
 
-    public void setSerialNumber(int serialNumber) {
+    public void setSerialNumber(Long serialNumber) {
         this.serialNumber = serialNumber;
     }
 

@@ -10,8 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 
 @RestController
 @RequestMapping(path = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -25,7 +23,6 @@ public class TodoItemRestController {
         this.userService = userService;
     }
 
-
     @PostMapping("/todos")
     @ResponseStatus(HttpStatus.CREATED)
     public void save(@RequestBody TodoItem todoItem) {
@@ -33,14 +30,16 @@ public class TodoItemRestController {
     }
 
     @GetMapping("/todos")
-    public ResponseEntity<List<TodoItem>> findAllOrFilter(@RequestParam(value = "q", required = false) String word) {
+    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word) {
         User authenticatedUser = userService.definePrincipal();
         if (word != null) {
             if (todoItemService.findSpecificItem(word, authenticatedUser.getId()).isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else
                 return new ResponseEntity<>(todoItemService.findSpecificItem(word, authenticatedUser.getId()), HttpStatus.OK);
-        } else return new ResponseEntity<>(todoItemService.findAll(authenticatedUser.getId()), HttpStatus.OK);
+        } else if (todoItemService.checkTasksState().isPresent()) {
+            return new ResponseEntity<>(todoItemService.findAll(authenticatedUser.getId()), HttpStatus.OK);
+        } else return new ResponseEntity<>(todoItemService.getTodoItemWithNorrisJoke(), HttpStatus.OK);
     }
 
     @PatchMapping("/todos/{number}")

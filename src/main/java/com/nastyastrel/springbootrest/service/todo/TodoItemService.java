@@ -1,6 +1,7 @@
 package com.nastyastrel.springbootrest.service.todo;
 
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
+import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +16,8 @@ public interface TodoItemService {
     Optional<TodoItem> changeStateToDone(int serialNumber);
 
     Optional<TodoItem> deleteItem(int serialNumber);
+
+    TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke();
+
+    Optional<List<TodoItem>> checkTasksState();
 }

@@ -3,7 +3,9 @@ package com.nastyastrel.springbootrest.service.todo;
 
 import com.nastyastrel.springbootrest.model.todo.TaskState;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
+import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 import com.nastyastrel.springbootrest.repository.TodoItemRepository;
+import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
 import com.nastyastrel.springbootrest.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,16 +22,33 @@ public class TodoItemServiceImpl implements TodoItemService {
     private final UserService userService;
 
     @Autowired
-    public TodoItemServiceImpl(TodoItemRepository repository, UserService userService) {
+    public TodoItemServiceImpl(TodoItemRepository repository, UserService userService, ChuckNorrisClient chuckNorrisClient) {
         this.repository = repository;
         this.userService = userService;
     }
 
     @Override
     public List<TodoItem> findAll(Long todoItemOwner) {
-        List<TodoItem> todoItems = new ArrayList<>();
-        repository.findAllByTodoItemOwnerEquals(todoItemOwner).forEach(todoItems::add);
-        return todoItems;
+        return new ArrayList<>(repository.findAllByTodoItemOwnerEquals(todoItemOwner));
+    }
+
+    @Override
+    public TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke() {
+        return new TodoItemListWithNorrisJoke(findAll(userService.definePrincipal().getId()), new ChuckNorrisClient().getChuckNorrisJoke());
+    }
+
+    @Override
+    public Optional<List<TodoItem>> checkTasksState() {
+        int count = 0;
+        List<TodoItem> todoItems = findAll(userService.definePrincipal().getId());
+        for (TodoItem todoItem : todoItems) {
+            if (todoItem.getState().equals(TaskState.DONE)) {
+                count++;
+            }
+        }
+        if (count == todoItems.size()) {
+            return Optional.empty();
+        } else return Optional.of(todoItems);
     }
 
     @Override
