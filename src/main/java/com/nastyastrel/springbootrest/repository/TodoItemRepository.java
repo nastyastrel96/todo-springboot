@@ -6,10 +6,10 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 import java.util.Optional;
 
-public interface TodoItemRepository extends CrudRepository<TodoItem, Integer> {
-    List<TodoItem> findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(String description, Long todoItemOwner);
+public interface TodoItemRepository extends CrudRepository<TodoItem, Long> {
+    List<TodoItem> findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(String description, Long idItemOwner);
 
     List<TodoItem> findAllByTodoItemOwnerEquals(Long todoItemOwner);
 
-    Optional<TodoItem> deleteTodoItemBySerialNumber(int serialNumber);
+    Optional<TodoItem> deleteTodoItemBySerialNumber(Long serialNumber);
 }

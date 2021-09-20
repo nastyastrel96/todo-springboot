@@ -4,6 +4,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
 @Entity
 @Table(name = "todo_items")
@@ -59,8 +60,9 @@ public class TodoItem {
         return state;
     }
 
-    public void setState(TaskState state) {
+    public Consumer<? super TodoItem> setState(TaskState state) {
         this.state = state;
+        return null;
     }
 
     public LocalDateTime getCreationDate() {

@@ -34,19 +34,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<User> findByLogin(String userName) {
-        Optional<User> userOptional = repository.findByLogin(userName);
-        if (userOptional.isPresent()) {
-            return repository.findByLogin(userName);
-        } else return userOptional;
+        return repository.findByLogin(userName);
     }
 
     @Override
-    public User definePrincipal() {
+    public Optional<User> getAuthenticatedUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        User authenticatedUser = null;
-        if (findByLogin(authentication.getName()).isPresent()) {
-            authenticatedUser = findByLogin(authentication.getName()).get();
-        }
-        return authenticatedUser;
+        return findByLogin(authentication.getName());
     }
 }

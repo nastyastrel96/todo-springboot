@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -30,31 +32,39 @@ public class TodoItemRestController {
     }
 
     @GetMapping("/todos")
-    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word) {
-        User authenticatedUser = userService.definePrincipal();
+    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word, @AuthenticationPrincipal User user) {
+        user = userService.getAuthenticatedUser().orElseThrow();
         if (word != null) {
-            if (todoItemService.findSpecificItem(word, authenticatedUser.getId()).isEmpty()) {
+            if (todoItemService.findSpecificItem(word, user.getId()).isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else
-                return new ResponseEntity<>(todoItemService.findSpecificItem(word, authenticatedUser.getId()), HttpStatus.OK);
-        } else if (todoItemService.checkTasksState().isPresent()) {
-            return new ResponseEntity<>(todoItemService.findAll(authenticatedUser.getId()), HttpStatus.OK);
-        } else return new ResponseEntity<>(todoItemService.getTodoItemWithNorrisJoke(), HttpStatus.OK);
+                return new ResponseEntity<>(todoItemService.findSpecificItem(word, user.getId()), HttpStatus.OK);
+        } else if (!todoItemService.checkTasksStateToBeDone(user)) {
+            return new ResponseEntity<>(todoItemService.findAll(user.getId()), HttpStatus.OK);
+        } else return new ResponseEntity<>(todoItemService.getTodoItemWithNorrisJoke(user), HttpStatus.OK);
     }
 
     @PatchMapping("/todos/{number}")
-    public ResponseEntity<TodoItem> changeStateToDone(@PathVariable int number) {
-        if (todoItemService.changeStateToDone(number).isPresent()) {
-            todoItemService.changeStateToDone(number);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<TodoItem> changeStateToDone(@PathVariable Long number) {
+        Optional<User> optionalUser = userService.getAuthenticatedUser();
+        if (optionalUser.isPresent()) {
+            Optional<TodoItem> optionalTodoItem = todoItemService.changeStateToDone(number, optionalUser.get());
+            if (optionalTodoItem.isPresent()) {
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @DeleteMapping("/todos/{number}")
-    public ResponseEntity<TodoItem> deleteItem(@PathVariable int number) {
-        if (todoItemService.deleteItem(number).isPresent()) {
-            todoItemService.deleteItem(number);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<TodoItem> deleteItem(@PathVariable Long number) {
+        Optional<User> optionalUser = userService.getAuthenticatedUser();
+        if (optionalUser.isPresent()) {
+            Optional<TodoItem> optionalTodoItem = todoItemService.deleteItem(number, optionalUser.get());
+            if (optionalTodoItem.isPresent()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 }
