@@ -32,8 +32,8 @@ public class TodoItemRestController {
     }
 
     @GetMapping("/todos")
-    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word, @AuthenticationPrincipal User user) {
-        user = userService.getAuthenticatedUser().orElseThrow();
+    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word) {
+        User user = userService.getAuthenticatedUser().orElseThrow();
         if (word != null) {
             if (todoItemService.findSpecificItem(word, user.getId()).isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
