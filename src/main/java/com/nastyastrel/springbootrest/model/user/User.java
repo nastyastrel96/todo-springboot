@@ -150,4 +150,17 @@ public class User implements UserDetails {
         return enabled;
     }
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", login='" + login + '\'' +
+                ", password='" + password + '\'' +
+                ", enabled=" + enabled +
+                ", roles=" + roles +
+                ", tasks=" + tasks +
+                '}';
+    }
 }

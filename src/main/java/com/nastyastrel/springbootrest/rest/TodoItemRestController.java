@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -35,12 +34,12 @@ public class TodoItemRestController {
     public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word) {
         User user = userService.getAuthenticatedUser().orElseThrow();
         if (word != null) {
-            if (todoItemService.findSpecificItem(word, user.getId()).isEmpty()) {
+            if (todoItemService.findSpecificItem(word, user).isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else
-                return new ResponseEntity<>(todoItemService.findSpecificItem(word, user.getId()), HttpStatus.OK);
+                return new ResponseEntity<>(todoItemService.findSpecificItem(word, user), HttpStatus.OK);
         } else if (!todoItemService.checkTasksStateToBeDone(user)) {
-            return new ResponseEntity<>(todoItemService.findAll(user.getId()), HttpStatus.OK);
+            return new ResponseEntity<>(todoItemService.findAll(user), HttpStatus.OK);
         } else return new ResponseEntity<>(todoItemService.getTodoItemWithNorrisJoke(user), HttpStatus.OK);
     }
 
@@ -53,7 +52,7 @@ public class TodoItemRestController {
                 return new ResponseEntity<>(HttpStatus.OK);
             }
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     @DeleteMapping("/todos/{number}")
@@ -65,6 +64,6 @@ public class TodoItemRestController {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 }

@@ -31,4 +31,12 @@ public class TodoItemListWithNorrisJoke {
     public void setChuckNorrisJoke(ChuckNorrisJoke chuckNorrisJoke) {
         this.chuckNorrisJoke = chuckNorrisJoke;
     }
+
+    @Override
+    public String toString() {
+        return "TodoItemListWithNorrisJoke{" +
+                "todoItemList=" + todoItemList +
+                ", chuckNorrisJoke=" + chuckNorrisJoke +
+                '}';
+    }
 }

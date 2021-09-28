@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Optional;
 
 public interface TodoItemService {
-    List<TodoItem> findAll(Long idItemOwner);
+    List<TodoItem> findAll(User user);
 
     void save(TodoItem item);
 
-    List<TodoItem> findSpecificItem(String wordToBeFound, Long idItemOwner);
+    List<TodoItem> findSpecificItem(String wordToBeFound, User user);
 
     Optional<TodoItem> changeStateToDone(Long serialNumber, User user);
 

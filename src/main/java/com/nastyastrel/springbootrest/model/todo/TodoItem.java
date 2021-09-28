@@ -60,9 +60,8 @@ public class TodoItem {
         return state;
     }
 
-    public Consumer<? super TodoItem> setState(TaskState state) {
+    public void setState(TaskState state) {
         this.state = state;
-        return null;
     }
 
     public LocalDateTime getCreationDate() {
@@ -81,4 +80,14 @@ public class TodoItem {
         this.todoItemOwner = todoItemOwner;
     }
 
+    @Override
+    public String toString() {
+        return "TodoItem{" +
+                "serialNumber=" + serialNumber +
+                ", description='" + description + '\'' +
+                ", state=" + state +
+                ", creationDate=" + creationDate +
+                ", todoItemOwner=" + todoItemOwner +
+                '}';
+    }
 }

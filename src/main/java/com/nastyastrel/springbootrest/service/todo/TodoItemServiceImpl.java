@@ -27,18 +27,18 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     @Override
-    public List<TodoItem> findAll(Long idItemOwner) {
-        return new ArrayList<>(repository.findAllByTodoItemOwnerEquals(idItemOwner));
+    public List<TodoItem> findAll(User user) {
+        return repository.findAllByTodoItemOwnerEquals(user.getId());
     }
 
     @Override
     public TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke(User user) {
-        return new TodoItemListWithNorrisJoke(findAll(user.getId()), chuckNorrisClient.getChuckNorrisJoke());
+        return new TodoItemListWithNorrisJoke(findAll(user), chuckNorrisClient.getChuckNorrisJoke());
     }
 
     @Override
     public boolean checkTasksStateToBeDone(User user) {
-        List<TodoItem> todoItemList = findAll(user.getId());
+        List<TodoItem> todoItemList = findAll(user);
         return todoItemList.stream().allMatch(todoItem -> todoItem.getState().equals(TaskState.DONE));
     }
 
@@ -48,8 +48,8 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     @Override
-    public List<TodoItem> findSpecificItem(String wordToBeFound, Long idItemOwner) {
-        return new ArrayList<>(repository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, idItemOwner));
+    public List<TodoItem> findSpecificItem(String wordToBeFound, User user) {
+        return repository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, user.getId());
     }
 
     @Override
