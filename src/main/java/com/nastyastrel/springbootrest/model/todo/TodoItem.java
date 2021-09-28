@@ -1,18 +1,18 @@
-package com.nastyastrel.springbootrest.entity.todo;
+package com.nastyastrel.springbootrest.model.todo;
 
-import com.nastyastrel.springbootrest.entity.todo.TaskState;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.function.Consumer;
 
 @Entity
-@Table(name = "todo")
+@Table(name = "todo_items")
 public class TodoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "serial_number")
-    private int serialNumber;
+    private Long serialNumber;
 
     @Column(name = "description")
     private String description;
@@ -25,21 +25,26 @@ public class TodoItem {
     @CreationTimestamp
     private LocalDateTime creationDate;
 
+    @Column(name = "item_owner")
+    private Long todoItemOwner;
+
+
     public TodoItem() {
     }
 
-    public TodoItem(int serialNumber, String description, TaskState state, LocalDateTime creationDate) {
+    public TodoItem(Long serialNumber, String description, TaskState state, LocalDateTime creationDate, Long todoItemOwner) {
         this.serialNumber = serialNumber;
         this.description = description;
         this.state = state;
         this.creationDate = creationDate;
+        this.todoItemOwner = todoItemOwner;
     }
 
-    public int getSerialNumber() {
+    public Long getSerialNumber() {
         return serialNumber;
     }
 
-    public void setSerialNumber(int serialNumber) {
+    public void setSerialNumber(Long serialNumber) {
         this.serialNumber = serialNumber;
     }
 
@@ -65,5 +70,24 @@ public class TodoItem {
 
     public void setCreationDate(LocalDateTime creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public Long getTodoItemOwner() {
+        return todoItemOwner;
+    }
+
+    public void setTodoItemOwner(Long todoItemOwner) {
+        this.todoItemOwner = todoItemOwner;
+    }
+
+    @Override
+    public String toString() {
+        return "TodoItem{" +
+                "serialNumber=" + serialNumber +
+                ", description='" + description + '\'' +
+                ", state=" + state +
+                ", creationDate=" + creationDate +
+                ", todoItemOwner=" + todoItemOwner +
+                '}';
     }
 }

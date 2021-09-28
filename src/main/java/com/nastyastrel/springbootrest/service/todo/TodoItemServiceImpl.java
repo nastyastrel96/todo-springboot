@@ -1,0 +1,79 @@
+package com.nastyastrel.springbootrest.service.todo;
+
+
+import com.nastyastrel.springbootrest.model.todo.TaskState;
+import com.nastyastrel.springbootrest.model.todo.TodoItem;
+import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
+import com.nastyastrel.springbootrest.model.user.User;
+import com.nastyastrel.springbootrest.repository.TodoItemRepository;
+import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class TodoItemServiceImpl implements TodoItemService {
+    private final TodoItemRepository repository;
+    private final ChuckNorrisClient chuckNorrisClient;
+
+    @Autowired
+    public TodoItemServiceImpl(TodoItemRepository repository, ChuckNorrisClient chuckNorrisClient) {
+        this.repository = repository;
+        this.chuckNorrisClient = chuckNorrisClient;
+    }
+
+    @Override
+    public List<TodoItem> findAll(User user) {
+        return repository.findAllByTodoItemOwnerEquals(user.getId());
+    }
+
+    @Override
+    public TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke(User user) {
+        return new TodoItemListWithNorrisJoke(findAll(user), chuckNorrisClient.getChuckNorrisJoke());
+    }
+
+    @Override
+    public boolean checkTasksStateToBeDone(User user) {
+        List<TodoItem> todoItemList = findAll(user);
+        return todoItemList.stream().allMatch(todoItem -> todoItem.getState().equals(TaskState.DONE));
+    }
+
+    @Override
+    public void save(TodoItem item) {
+        repository.save(item);
+    }
+
+    @Override
+    public List<TodoItem> findSpecificItem(String wordToBeFound, User user) {
+        return repository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, user.getId());
+    }
+
+    @Override
+    public Optional<TodoItem> changeStateToDone(Long serialNumber, User user) {
+        Optional<TodoItem> todoItemOptional = repository.findById(serialNumber);
+        return todoItemOptional.filter(todoItem -> user.getId().equals(todoItem.getTodoItemOwner())).map(
+                todoItem -> {
+                    todoItem.setState(TaskState.DONE);
+                    save(todoItem);
+                    return todoItem;
+                }
+        );
+    }
+
+
+    @Override
+    @Transactional
+    public Optional<TodoItem> deleteItem(Long serialNumber, User user) {
+        Optional<TodoItem> todoItemOptional = repository.findById(serialNumber);
+        return todoItemOptional.filter(todoItem -> user.getId().equals(todoItem.getTodoItemOwner())).map(
+                todoItem -> {
+                    repository.deleteById(serialNumber);
+                    return todoItem;
+                }
+        );
+    }
+}
