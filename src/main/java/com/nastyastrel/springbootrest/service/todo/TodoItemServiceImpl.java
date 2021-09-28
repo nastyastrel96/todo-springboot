@@ -7,11 +7,13 @@ import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 import com.nastyastrel.springbootrest.model.user.User;
 import com.nastyastrel.springbootrest.repository.TodoItemRepository;
 import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
+import com.nastyastrel.springbootrest.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,11 +21,13 @@ import java.util.Optional;
 public class TodoItemServiceImpl implements TodoItemService {
     private final TodoItemRepository repository;
     private final ChuckNorrisClient chuckNorrisClient;
+    private final UserService userService;
 
     @Autowired
-    public TodoItemServiceImpl(TodoItemRepository repository, ChuckNorrisClient chuckNorrisClient) {
+    public TodoItemServiceImpl(TodoItemRepository repository, ChuckNorrisClient chuckNorrisClient, UserService userService) {
         this.repository = repository;
         this.chuckNorrisClient = chuckNorrisClient;
+        this.userService = userService;
     }
 
     @Override
@@ -32,46 +36,77 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     @Override
-    public TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke(User user) {
-        return new TodoItemListWithNorrisJoke(findAll(user), chuckNorrisClient.getChuckNorrisJoke());
-    }
-
-    @Override
-    public boolean checkTasksStateToBeDone(User user) {
-        List<TodoItem> todoItemList = findAll(user);
-        return todoItemList.stream().allMatch(todoItem -> todoItem.getState().equals(TaskState.DONE));
-    }
-
-    @Override
     public void save(TodoItem item) {
         repository.save(item);
     }
 
     @Override
-    public List<TodoItem> findSpecificItem(String wordToBeFound, User user) {
-        return repository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, user.getId());
+    @Transactional
+    public ResponseEntity<TodoItem> deleteTodoItem(Long number) {
+        Optional<User> optionalUser = userService.getAuthenticatedUser();
+        if (optionalUser.isPresent()) {
+            Optional<TodoItem> optionalTodoItem = deleteItem(number, optionalUser.get());
+            if (optionalTodoItem.isPresent()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
-    @Override
-    public Optional<TodoItem> changeStateToDone(Long serialNumber, User user) {
+    private Optional<TodoItem> deleteItem(Long serialNumber, User user) {
         Optional<TodoItem> todoItemOptional = repository.findById(serialNumber);
         return todoItemOptional.filter(todoItem -> user.getId().equals(todoItem.getTodoItemOwner())).map(
                 todoItem -> {
-                    todoItem.setState(TaskState.DONE);
-                    save(todoItem);
+                    repository.deleteById(serialNumber);
                     return todoItem;
                 }
         );
     }
 
+    @Override
+    public ResponseEntity<?> findAllOrFilter(String word, User user) {
+        if (word != null) {
+            if (findSpecificItem(word, user).isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            } else
+                return new ResponseEntity<>(findSpecificItem(word, user), HttpStatus.OK);
+        } else if (!isEachTaskStateHasStateDone(user)) {
+            return new ResponseEntity<>(findAll(user), HttpStatus.OK);
+        } else return new ResponseEntity<>(getTodoItemWithNorrisJoke(user), HttpStatus.OK);
+    }
+
+    private List<TodoItem> findSpecificItem(String wordToBeFound, User user) {
+        return repository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, user.getId());
+    }
+
+    private boolean isEachTaskStateHasStateDone(User user) {
+        List<TodoItem> todoItemList = findAll(user);
+        return todoItemList.stream().allMatch(todoItem -> todoItem.getState().equals(TaskState.DONE));
+    }
+
+    private TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke(User user) {
+        return new TodoItemListWithNorrisJoke(findAll(user), chuckNorrisClient.getChuckNorrisJoke());
+    }
+
 
     @Override
-    @Transactional
-    public Optional<TodoItem> deleteItem(Long serialNumber, User user) {
+    public ResponseEntity<TodoItem> todoItemIsDone(Long number) {
+        Optional<User> optionalUser = userService.getAuthenticatedUser();
+        if (optionalUser.isPresent()) {
+            Optional<TodoItem> optionalTodoItem = changeStateToDone(number, optionalUser.get());
+            if (optionalTodoItem.isPresent()) {
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    }
+
+    private Optional<TodoItem> changeStateToDone(Long serialNumber, User user) {
         Optional<TodoItem> todoItemOptional = repository.findById(serialNumber);
         return todoItemOptional.filter(todoItem -> user.getId().equals(todoItem.getTodoItemOwner())).map(
                 todoItem -> {
-                    repository.deleteById(serialNumber);
+                    todoItem.setState(TaskState.DONE);
+                    save(todoItem);
                     return todoItem;
                 }
         );
