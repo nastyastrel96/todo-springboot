@@ -176,12 +176,11 @@ class TodoItemServiceTest {
                         new TodoItem(26L, "Read over the article", TaskState.UNDONE, LocalDateTime.of(2021, 9, 28, 13, 18, 28), 3L));
         when(todoItemRepository.findAllByTodoItemOwnerEquals(user.getId())).thenReturn(todoItemList);
 
-
         //when
         var answer = underTest.findAllOrFilter(word, user);
 
         //then
-        verify(todoItemRepository, Mockito.times(2)).findAllByTodoItemOwnerEquals(user.getId());
+        verify(todoItemRepository).findAllByTodoItemOwnerEquals(user.getId());
         assertEquals(new ResponseEntity<>(todoItemList, HttpStatus.OK), answer);
     }
 
@@ -199,12 +198,11 @@ class TodoItemServiceTest {
         when(todoItemRepository.findAllByTodoItemOwnerEquals(user.getId())).thenReturn(todoItemList);
         when(chuckNorrisClient.getChuckNorrisJoke()).thenReturn(chuckNorrisJoke);
 
-
         //when
         var answer = underTest.findAllOrFilter(word, user);
 
         //then
-        verify(todoItemRepository, Mockito.times(2)).findAllByTodoItemOwnerEquals(user.getId());
+        verify(todoItemRepository).findAllByTodoItemOwnerEquals(user.getId());
         verify(chuckNorrisClient).getChuckNorrisJoke();
         assertEquals(new ResponseEntity<>(todoItemListWithNorrisJoke, HttpStatus.OK), answer);
     }

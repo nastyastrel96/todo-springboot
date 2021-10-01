@@ -65,28 +65,28 @@ public class TodoItemServiceImpl implements TodoItemService {
 
     @Override
     public ResponseEntity<?> findAllOrFilter(String word, User user) {
+        List<TodoItem> allTodoItems = findAll(user);
         if (word != null) {
             List<TodoItem> todoItemList = findSpecificItem(word, user);
             if (todoItemList.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else
                 return new ResponseEntity<>(todoItemList, HttpStatus.OK);
-        } else if (!isEachTaskStateHasStateDone(user)) {
-            return new ResponseEntity<>(findAll(user), HttpStatus.OK);
-        } else return new ResponseEntity<>(getTodoItemWithNorrisJoke(user), HttpStatus.OK);
+        } else if (!isEachTaskStateHasStateDone(allTodoItems)) {
+            return new ResponseEntity<>(allTodoItems, HttpStatus.OK);
+        } else return new ResponseEntity<>(getTodoItemWithNorrisJoke(allTodoItems), HttpStatus.OK);
     }
 
     private List<TodoItem> findSpecificItem(String wordToBeFound, User user) {
         return todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, user.getId());
     }
 
-    private boolean isEachTaskStateHasStateDone(User user) {
-        List<TodoItem> todoItemList = findAll(user);
+    private boolean isEachTaskStateHasStateDone(List<TodoItem> todoItemList) {
         return todoItemList.stream().allMatch(todoItem -> todoItem.getState().equals(TaskState.DONE));
     }
 
-    private TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke(User user) {
-        return new TodoItemListWithNorrisJoke(findAll(user), chuckNorrisClient.getChuckNorrisJoke());
+    private TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke(List<TodoItem> todoItemList) {
+        return new TodoItemListWithNorrisJoke(todoItemList, chuckNorrisClient.getChuckNorrisJoke());
     }
 
 
