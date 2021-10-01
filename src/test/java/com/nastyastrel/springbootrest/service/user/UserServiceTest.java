@@ -6,14 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextImpl;
-
 import java.util.List;
 import java.util.Optional;
 
@@ -71,23 +64,6 @@ class UserServiceTest {
 
         //then
         verify(userRepository).findByLogin(user.getLogin());
-        assertEquals(Optional.of(user), answer);
-    }
-
-    @Test
-    void name() {
-        //given
-        User user = new User(3L, "Filipp", "Kirkorov", "filipp");
-        MockedStatic<SecurityContextHolder> mockedStatic = Mockito.mockStatic(SecurityContextHolder.class);
-        SecurityContext securityContext = new SecurityContextImpl();
-        mockedStatic.when(SecurityContextHolder::getContext).thenReturn(securityContext);
-        Authentication authentication = securityContext.getAuthentication();
-        System.out.println(authentication.getName());
-
-        //when
-        var answer = underTest.getAuthenticatedUser();
-
-        //then
         assertEquals(Optional.of(user), answer);
     }
 }
