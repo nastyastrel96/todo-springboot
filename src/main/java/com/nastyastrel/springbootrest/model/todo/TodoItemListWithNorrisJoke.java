@@ -3,6 +3,7 @@ package com.nastyastrel.springbootrest.model.todo;
 import com.nastyastrel.springbootrest.model.clientchucknorris.ChuckNorrisJoke;
 
 import java.util.List;
+import java.util.Objects;
 
 public class TodoItemListWithNorrisJoke {
     private List<TodoItem> todoItemList;
@@ -30,6 +31,19 @@ public class TodoItemListWithNorrisJoke {
 
     public void setChuckNorrisJoke(ChuckNorrisJoke chuckNorrisJoke) {
         this.chuckNorrisJoke = chuckNorrisJoke;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TodoItemListWithNorrisJoke that = (TodoItemListWithNorrisJoke) o;
+        return Objects.equals(todoItemList, that.todoItemList) && Objects.equals(chuckNorrisJoke, that.chuckNorrisJoke);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(todoItemList, chuckNorrisJoke);
     }
 
     @Override

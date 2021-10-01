@@ -10,7 +10,7 @@ public interface UserService {
 
     void save(User user);
 
-    Optional<User> findByLogin(String userName);
+    Optional<User> findByLogin(String login);
 
     Optional<User> getAuthenticatedUser();
 }

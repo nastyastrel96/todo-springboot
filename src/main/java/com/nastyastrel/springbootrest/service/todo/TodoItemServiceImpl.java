@@ -19,25 +19,25 @@ import java.util.Optional;
 
 @Service
 public class TodoItemServiceImpl implements TodoItemService {
-    private final TodoItemRepository repository;
+    private final TodoItemRepository todoItemRepository;
     private final ChuckNorrisClient chuckNorrisClient;
     private final UserService userService;
 
     @Autowired
     public TodoItemServiceImpl(TodoItemRepository repository, ChuckNorrisClient chuckNorrisClient, UserService userService) {
-        this.repository = repository;
+        this.todoItemRepository = repository;
         this.chuckNorrisClient = chuckNorrisClient;
         this.userService = userService;
     }
 
     @Override
     public List<TodoItem> findAll(User user) {
-        return repository.findAllByTodoItemOwnerEquals(user.getId());
+        return todoItemRepository.findAllByTodoItemOwnerEquals(user.getId());
     }
 
     @Override
     public void save(TodoItem item) {
-        repository.save(item);
+        todoItemRepository.save(item);
     }
 
     @Override
@@ -54,10 +54,10 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     private Optional<TodoItem> deleteItem(Long serialNumber, User user) {
-        Optional<TodoItem> todoItemOptional = repository.findById(serialNumber);
+        Optional<TodoItem> todoItemOptional = todoItemRepository.findById(serialNumber);
         return todoItemOptional.filter(todoItem -> user.getId().equals(todoItem.getTodoItemOwner())).map(
                 todoItem -> {
-                    repository.deleteById(serialNumber);
+                    todoItemRepository.deleteById(serialNumber);
                     return todoItem;
                 }
         );
@@ -66,17 +66,18 @@ public class TodoItemServiceImpl implements TodoItemService {
     @Override
     public ResponseEntity<?> findAllOrFilter(String word, User user) {
         if (word != null) {
-            if (findSpecificItem(word, user).isEmpty()) {
+            List<TodoItem> todoItemList = findSpecificItem(word, user);
+            if (todoItemList.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else
-                return new ResponseEntity<>(findSpecificItem(word, user), HttpStatus.OK);
+                return new ResponseEntity<>(todoItemList, HttpStatus.OK);
         } else if (!isEachTaskStateHasStateDone(user)) {
             return new ResponseEntity<>(findAll(user), HttpStatus.OK);
         } else return new ResponseEntity<>(getTodoItemWithNorrisJoke(user), HttpStatus.OK);
     }
 
     private List<TodoItem> findSpecificItem(String wordToBeFound, User user) {
-        return repository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, user.getId());
+        return todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, user.getId());
     }
 
     private boolean isEachTaskStateHasStateDone(User user) {
@@ -102,7 +103,7 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     private Optional<TodoItem> changeStateToDone(Long serialNumber, User user) {
-        Optional<TodoItem> todoItemOptional = repository.findById(serialNumber);
+        Optional<TodoItem> todoItemOptional = todoItemRepository.findById(serialNumber);
         return todoItemOptional.filter(todoItem -> user.getId().equals(todoItem.getTodoItemOwner())).map(
                 todoItem -> {
                     todoItem.setState(TaskState.DONE);

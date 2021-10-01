@@ -4,6 +4,7 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 @Entity
@@ -78,6 +79,19 @@ public class TodoItem {
 
     public void setTodoItemOwner(Long todoItemOwner) {
         this.todoItemOwner = todoItemOwner;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TodoItem todoItem = (TodoItem) o;
+        return Objects.equals(serialNumber, todoItem.serialNumber) && Objects.equals(description, todoItem.description) && state == todoItem.state && Objects.equals(creationDate, todoItem.creationDate) && Objects.equals(todoItemOwner, todoItem.todoItemOwner);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(serialNumber, description, state, creationDate, todoItemOwner);
     }
 
     @Override
