@@ -48,9 +48,8 @@ public class TodoItemServiceImpl implements TodoItemService {
             Optional<TodoItem> optionalTodoItem = deleteItem(number, optionalUser.get());
             if (optionalTodoItem.isPresent()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-        }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+            } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
     private Optional<TodoItem> deleteItem(Long serialNumber, User user) {
@@ -65,20 +64,21 @@ public class TodoItemServiceImpl implements TodoItemService {
 
     @Override
     public ResponseEntity<?> findAllOrFilter(String word, User user) {
-        List<TodoItem> allTodoItems = findAll(user);
         if (word != null) {
-            List<TodoItem> filteredTodoItems = filterTodoItems(allTodoItems, word);
+            List<TodoItem> filteredTodoItems = filterTodoItems(word, user);
             if (filteredTodoItems.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else
                 return new ResponseEntity<>(filteredTodoItems, HttpStatus.OK);
-        } else if (!isEachTaskStateHasStateDone(allTodoItems)) {
+        }
+        List<TodoItem> allTodoItems = findAll(user);
+        if (!isEachTaskStateHasStateDone(allTodoItems)) {
             return new ResponseEntity<>(allTodoItems, HttpStatus.OK);
         } else return new ResponseEntity<>(getTodoItemWithNorrisJoke(allTodoItems), HttpStatus.OK);
     }
 
-    private List<TodoItem> filterTodoItems(List<TodoItem> todoItemList, String wordToBeFound) {
-        return todoItemList.stream().filter(todoItem -> todoItem.getDescription().toLowerCase().contains(wordToBeFound.toLowerCase())).toList();
+    private List<TodoItem> filterTodoItems(String word, User user) {
+        return todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(word, user.getId());
     }
 
     private boolean isEachTaskStateHasStateDone(List<TodoItem> todoItemList) {
@@ -93,6 +93,7 @@ public class TodoItemServiceImpl implements TodoItemService {
     @Override
     public ResponseEntity<TodoItem> todoItemIsDone(Long number) {
         Optional<User> optionalUser = userService.getAuthenticatedUser();
+        optionalUser.map(user -> changeStateToDone(number, user));
         if (optionalUser.isPresent()) {
             Optional<TodoItem> optionalTodoItem = changeStateToDone(number, optionalUser.get());
             if (optionalTodoItem.isPresent()) {

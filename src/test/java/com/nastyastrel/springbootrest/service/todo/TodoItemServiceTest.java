@@ -10,14 +10,13 @@ import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
 import com.nastyastrel.springbootrest.service.user.UserService;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -101,6 +100,22 @@ class TodoItemServiceTest {
     }
 
     @Test
+    void itShouldNotDeleteTodoItemIfUserIsCorrectButTodoItemIsIncorrect() {
+        //given
+        TodoItem todoItem = new TodoItem(25L, "Buy tickets", TaskState.DONE, LocalDateTime.of(2021, 9, 20, 21, 48, 22), 3L);
+        User user = new User(3L, "Filipp", "Kirkorov", "filipp");
+        when(userService.getAuthenticatedUser()).thenReturn(Optional.of(user));
+        when(todoItemRepository.findById(eq(todoItem.getSerialNumber()))).thenReturn(Optional.empty());
+
+        //when
+        var answer = underTest.deleteTodoItem(todoItem.getSerialNumber());
+
+        //then
+        verify(userService).getAuthenticatedUser();
+        assertEquals(new ResponseEntity<TodoItem>(HttpStatus.NOT_FOUND), answer);
+    }
+
+    @Test
     void itShouldSaveTodoItemIfUserIsCorrect() {
         //given
         TodoItem todoItem = new TodoItem(25L, "Buy tickets", TaskState.DONE, LocalDateTime.of(2021, 9, 20, 21, 48, 22), 3L);
@@ -137,16 +152,14 @@ class TodoItemServiceTest {
         String word = "read";
         User user = new User(3L, "Filipp", "Kirkorov", "filipp");
         List<TodoItem> todoItemList =
-                List.of(new TodoItem(25L, "Buy tickets", TaskState.DONE, LocalDateTime.of(2021, 9, 20, 21, 48, 22), 3L),
-                        new TodoItem(26L, "Read over the article", TaskState.UNDONE, LocalDateTime.of(2021, 9, 28, 13, 18, 28), 3L));
-        List<TodoItem> filteredTodoList =
                 List.of(new TodoItem(26L, "Read over the article", TaskState.UNDONE, LocalDateTime.of(2021, 9, 28, 13, 18, 28), 3L));
-
+        when(todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(eq(word), eq(user.getId()))).thenReturn(todoItemList);
         //when
         var answer = underTest.findAllOrFilter(word, user);
 
         //then
-        assertEquals(new ResponseEntity<>(filteredTodoList, HttpStatus.OK), answer);
+        verify(todoItemRepository).findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(eq(word), eq(user.getId()));
+        assertEquals(new ResponseEntity<>(todoItemList, HttpStatus.OK), answer);
 
     }
 
@@ -155,11 +168,12 @@ class TodoItemServiceTest {
         //given
         String word = "read";
         User user = new User(3L, "Filipp", "Kirkorov", "filipp");
-
+        when(todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(eq(word), eq(user.getId()))).thenReturn(Collections.emptyList());
         //when
         var answer = underTest.findAllOrFilter(word, user);
 
         //then
+        verify(todoItemRepository).findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(eq(word), eq(user.getId()));
         assertEquals(new ResponseEntity<>(HttpStatus.NOT_FOUND), answer);
     }
 
