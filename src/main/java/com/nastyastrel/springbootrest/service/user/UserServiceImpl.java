@@ -13,28 +13,28 @@ import java.util.Optional;
 
 @Service
 public class UserServiceImpl implements UserService {
-    private final UserRepository repository;
+    private final UserRepository userRepository;
 
     @Autowired
     public UserServiceImpl(UserRepository repository) {
-        this.repository = repository;
+        this.userRepository = repository;
     }
 
     @Override
     public List<User> findAll() {
-        List<User> todoItems = new ArrayList<>();
-        repository.findAll().forEach(todoItems::add);
-        return todoItems;
+        List<User> users = new ArrayList<>();
+        userRepository.findAll().forEach(users::add);
+        return users;
     }
 
     @Override
-    public void save(User item) {
-        repository.save(item);
+    public void save(User user) {
+        userRepository.save(user);
     }
 
     @Override
-    public Optional<User> findByLogin(String userName) {
-        return repository.findByLogin(userName);
+    public Optional<User> findByLogin(String login) {
+        return userRepository.findByLogin(login);
     }
 
     @Override

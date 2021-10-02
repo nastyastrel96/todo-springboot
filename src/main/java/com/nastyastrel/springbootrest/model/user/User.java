@@ -50,12 +50,11 @@ public class User implements UserDetails {
     public User() {
     }
 
-    public User(String firstName, String lastName, String login, String password, boolean enabled) {
+    public User(Long id, String firstName, String lastName, String login) {
+        this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.login = login;
-        this.password = password;
-        this.enabled = enabled;
     }
 
     public Long getId() {
@@ -148,6 +147,19 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return enabled;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return enabled == user.enabled && Objects.equals(id, user.id) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(roles, user.roles) && Objects.equals(tasks, user.tasks);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, firstName, lastName, login, password, enabled, roles, tasks);
     }
 
     @Override

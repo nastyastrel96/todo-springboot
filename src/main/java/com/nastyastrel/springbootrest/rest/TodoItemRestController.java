@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Optional;
 
 @RestController
 @RequestMapping(path = "/api", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -33,37 +32,16 @@ public class TodoItemRestController {
     @GetMapping("/todos")
     public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word) {
         User user = userService.getAuthenticatedUser().orElseThrow();
-        if (word != null) {
-            if (todoItemService.findSpecificItem(word, user).isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-            } else
-                return new ResponseEntity<>(todoItemService.findSpecificItem(word, user), HttpStatus.OK);
-        } else if (!todoItemService.checkTasksStateToBeDone(user)) {
-            return new ResponseEntity<>(todoItemService.findAll(user), HttpStatus.OK);
-        } else return new ResponseEntity<>(todoItemService.getTodoItemWithNorrisJoke(user), HttpStatus.OK);
+        return todoItemService.findAllOrFilter(word, user);
     }
 
     @PatchMapping("/todos/{number}")
-    public ResponseEntity<TodoItem> changeStateToDone(@PathVariable Long number) {
-        Optional<User> optionalUser = userService.getAuthenticatedUser();
-        if (optionalUser.isPresent()) {
-            Optional<TodoItem> optionalTodoItem = todoItemService.changeStateToDone(number, optionalUser.get());
-            if (optionalTodoItem.isPresent()) {
-                return new ResponseEntity<>(HttpStatus.OK);
-            }
-        }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    public ResponseEntity<TodoItem> todoIsDone(@PathVariable Long number) {
+        return todoItemService.todoItemIsDone(number);
     }
 
     @DeleteMapping("/todos/{number}")
     public ResponseEntity<TodoItem> deleteItem(@PathVariable Long number) {
-        Optional<User> optionalUser = userService.getAuthenticatedUser();
-        if (optionalUser.isPresent()) {
-            Optional<TodoItem> optionalTodoItem = todoItemService.deleteItem(number, optionalUser.get());
-            if (optionalTodoItem.isPresent()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            }
-        }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        return todoItemService.deleteTodoItem(number);
     }
 }

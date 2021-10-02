@@ -1,24 +1,19 @@
 package com.nastyastrel.springbootrest.service.todo;
 
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
-import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 import com.nastyastrel.springbootrest.model.user.User;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface TodoItemService {
     List<TodoItem> findAll(User user);
 
     void save(TodoItem item);
 
-    List<TodoItem> findSpecificItem(String wordToBeFound, User user);
+    ResponseEntity<TodoItem> deleteTodoItem(Long number);
 
-    Optional<TodoItem> changeStateToDone(Long serialNumber, User user);
+    ResponseEntity<?> findAllOrFilter(String word, User user);
 
-    Optional<TodoItem> deleteItem(Long serialNumber, User user);
-
-    TodoItemListWithNorrisJoke getTodoItemWithNorrisJoke(User user);
-
-    boolean checkTasksStateToBeDone(User user);
+    ResponseEntity<TodoItem> todoItemIsDone(Long number);
 }
