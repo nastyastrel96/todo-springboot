@@ -67,18 +67,18 @@ public class TodoItemServiceImpl implements TodoItemService {
     public ResponseEntity<?> findAllOrFilter(String word, User user) {
         List<TodoItem> allTodoItems = findAll(user);
         if (word != null) {
-            List<TodoItem> todoItemList = findSpecificItem(word, user);
-            if (todoItemList.isEmpty()) {
+            List<TodoItem> filteredTodoItems = filterTodoItems(allTodoItems, word);
+            if (filteredTodoItems.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             } else
-                return new ResponseEntity<>(todoItemList, HttpStatus.OK);
+                return new ResponseEntity<>(filteredTodoItems, HttpStatus.OK);
         } else if (!isEachTaskStateHasStateDone(allTodoItems)) {
             return new ResponseEntity<>(allTodoItems, HttpStatus.OK);
         } else return new ResponseEntity<>(getTodoItemWithNorrisJoke(allTodoItems), HttpStatus.OK);
     }
 
-    private List<TodoItem> findSpecificItem(String wordToBeFound, User user) {
-        return todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(wordToBeFound, user.getId());
+    private List<TodoItem> filterTodoItems(List<TodoItem> todoItemList, String wordToBeFound) {
+        return todoItemList.stream().filter(todoItem -> todoItem.getDescription().toLowerCase().contains(wordToBeFound.toLowerCase())).toList();
     }
 
     private boolean isEachTaskStateHasStateDone(List<TodoItem> todoItemList) {

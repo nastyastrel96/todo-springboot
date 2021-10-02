@@ -18,7 +18,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,10 +52,9 @@ class TodoItemServiceTest {
                 List.of(new TodoItem(25L, "Buy tickets", TaskState.DONE, LocalDateTime.of(2021, 9, 20, 21, 48, 22), 3L),
                         new TodoItem(26L, "Read over the article", TaskState.UNDONE, LocalDateTime.of(2021, 9, 28, 13, 18, 28), 3L));
         //when
-        when(todoItemRepository.findAllByTodoItemOwnerEquals(Mockito.eq(user.getId()))).thenReturn(todoItemList);
+        when(todoItemRepository.findAllByTodoItemOwnerEquals(eq(user.getId()))).thenReturn(todoItemList);
 
         //then
-        assertTrue(underTest.findAll(user).stream().anyMatch(todoItem -> todoItem.getState().equals(TaskState.DONE)));
         assertEquals(todoItemList, underTest.findAll(user), "Return list of todoItems");
     }
 
@@ -69,7 +67,7 @@ class TodoItemServiceTest {
         underTest.save(todoItem);
 
         //then
-        verify(todoItemRepository).save(ArgumentMatchers.eq(todoItem));
+        verify(todoItemRepository).save(eq(todoItem));
     }
 
     @Test
@@ -78,14 +76,14 @@ class TodoItemServiceTest {
         TodoItem todoItem = new TodoItem(25L, "Buy tickets", TaskState.DONE, LocalDateTime.of(2021, 9, 20, 21, 48, 22), 3L);
         User user = new User(3L, "Filipp", "Kirkorov", "filipp");
         when(userService.getAuthenticatedUser()).thenReturn(Optional.of(user));
-        when(todoItemRepository.findById(todoItem.getSerialNumber())).thenReturn(Optional.of(todoItem));
+        when(todoItemRepository.findById(eq(todoItem.getSerialNumber()))).thenReturn(Optional.of(todoItem));
 
         //when
         var answer = underTest.deleteTodoItem(todoItem.getSerialNumber());
 
         //then
         verify(userService).getAuthenticatedUser();
-        verify(todoItemRepository).deleteById(todoItem.getSerialNumber());
+        verify(todoItemRepository).deleteById(eq(todoItem.getSerialNumber()));
         assertEquals(new ResponseEntity<TodoItem>(HttpStatus.NO_CONTENT), answer);
     }
 
@@ -108,14 +106,14 @@ class TodoItemServiceTest {
         TodoItem todoItem = new TodoItem(25L, "Buy tickets", TaskState.DONE, LocalDateTime.of(2021, 9, 20, 21, 48, 22), 3L);
         User user = new User(3L, "Filipp", "Kirkorov", "filipp");
         when(userService.getAuthenticatedUser()).thenReturn(Optional.of(user));
-        when(todoItemRepository.findById(todoItem.getSerialNumber())).thenReturn(Optional.of(todoItem));
+        when(todoItemRepository.findById(eq(todoItem.getSerialNumber()))).thenReturn(Optional.of(todoItem));
 
         //when
         var answer = underTest.todoItemIsDone(todoItem.getSerialNumber());
 
         //then
         verify(userService).getAuthenticatedUser();
-        verify(todoItemRepository).findById(todoItem.getSerialNumber());
+        verify(todoItemRepository).findById(eq(todoItem.getSerialNumber()));
         assertEquals(new ResponseEntity<TodoItem>(HttpStatus.OK), answer);
     }
 
@@ -139,15 +137,16 @@ class TodoItemServiceTest {
         String word = "read";
         User user = new User(3L, "Filipp", "Kirkorov", "filipp");
         List<TodoItem> todoItemList =
+                List.of(new TodoItem(25L, "Buy tickets", TaskState.DONE, LocalDateTime.of(2021, 9, 20, 21, 48, 22), 3L),
+                        new TodoItem(26L, "Read over the article", TaskState.UNDONE, LocalDateTime.of(2021, 9, 28, 13, 18, 28), 3L));
+        List<TodoItem> filteredTodoList =
                 List.of(new TodoItem(26L, "Read over the article", TaskState.UNDONE, LocalDateTime.of(2021, 9, 28, 13, 18, 28), 3L));
-        when(todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(word, user.getId())).thenReturn(todoItemList);
 
         //when
         var answer = underTest.findAllOrFilter(word, user);
 
         //then
-        verify(todoItemRepository).findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(word, user.getId());
-        assertEquals(new ResponseEntity<>(todoItemList, HttpStatus.OK), answer);
+        assertEquals(new ResponseEntity<>(filteredTodoList, HttpStatus.OK), answer);
 
     }
 
@@ -156,13 +155,11 @@ class TodoItemServiceTest {
         //given
         String word = "read";
         User user = new User(3L, "Filipp", "Kirkorov", "filipp");
-        when(todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(word, user.getId())).thenReturn(Collections.emptyList());
 
         //when
         var answer = underTest.findAllOrFilter(word, user);
 
         //then
-        verify(todoItemRepository).findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(word, user.getId());
         assertEquals(new ResponseEntity<>(HttpStatus.NOT_FOUND), answer);
     }
 
@@ -180,7 +177,7 @@ class TodoItemServiceTest {
         var answer = underTest.findAllOrFilter(word, user);
 
         //then
-        verify(todoItemRepository).findAllByTodoItemOwnerEquals(user.getId());
+        verify(todoItemRepository).findAllByTodoItemOwnerEquals(eq(user.getId()));
         assertEquals(new ResponseEntity<>(todoItemList, HttpStatus.OK), answer);
     }
 
@@ -195,14 +192,14 @@ class TodoItemServiceTest {
         ChuckNorrisJoke chuckNorrisJoke = new ChuckNorrisJoke();
         chuckNorrisJoke.setValue("Очень смешно");
         TodoItemListWithNorrisJoke todoItemListWithNorrisJoke = new TodoItemListWithNorrisJoke(todoItemList, chuckNorrisJoke);
-        when(todoItemRepository.findAllByTodoItemOwnerEquals(user.getId())).thenReturn(todoItemList);
+        when(todoItemRepository.findAllByTodoItemOwnerEquals(eq(user.getId()))).thenReturn(todoItemList);
         when(chuckNorrisClient.getChuckNorrisJoke()).thenReturn(chuckNorrisJoke);
 
         //when
         var answer = underTest.findAllOrFilter(word, user);
 
         //then
-        verify(todoItemRepository).findAllByTodoItemOwnerEquals(user.getId());
+        verify(todoItemRepository).findAllByTodoItemOwnerEquals(eq(user.getId()));
         verify(chuckNorrisClient).getChuckNorrisJoke();
         assertEquals(new ResponseEntity<>(todoItemListWithNorrisJoke, HttpStatus.OK), answer);
     }

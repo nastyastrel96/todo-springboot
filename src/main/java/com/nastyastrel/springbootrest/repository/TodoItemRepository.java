@@ -6,7 +6,5 @@ import org.springframework.data.repository.CrudRepository;
 import java.util.List;
 
 public interface TodoItemRepository extends CrudRepository<TodoItem, Long> {
-    List<TodoItem> findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(String description, Long todoItemOwner);
-
     List<TodoItem> findAllByTodoItemOwnerEquals(Long todoItemOwner);
 }
