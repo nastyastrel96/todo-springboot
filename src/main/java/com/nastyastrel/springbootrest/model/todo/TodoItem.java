@@ -5,7 +5,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import java.util.function.Consumer;
 
 @Entity
 @Table(name = "todo_items")
@@ -13,7 +12,7 @@ public class TodoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "serial_number")
-    private Long serialNumber;
+    private Long itemId;
 
     @Column(name = "description")
     private String description;
@@ -34,51 +33,35 @@ public class TodoItem {
     }
 
     public TodoItem(Long serialNumber, String description, TaskState state, LocalDateTime creationDate, Long todoItemOwner) {
-        this.serialNumber = serialNumber;
+        this.itemId = serialNumber;
         this.description = description;
         this.state = state;
         this.creationDate = creationDate;
         this.todoItemOwner = todoItemOwner;
     }
 
-    public Long getSerialNumber() {
-        return serialNumber;
-    }
-
-    public void setSerialNumber(Long serialNumber) {
-        this.serialNumber = serialNumber;
+    public Long getItemId() {
+        return itemId;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public TaskState getState() {
         return state;
-    }
-
-    public void setState(TaskState state) {
-        this.state = state;
     }
 
     public LocalDateTime getCreationDate() {
         return creationDate;
     }
 
-    public void setCreationDate(LocalDateTime creationDate) {
-        this.creationDate = creationDate;
-    }
-
     public Long getTodoItemOwner() {
         return todoItemOwner;
     }
 
-    public void setTodoItemOwner(Long todoItemOwner) {
-        this.todoItemOwner = todoItemOwner;
+    public void setState(TaskState state) {
+        this.state = state;
     }
 
     @Override
@@ -86,18 +69,18 @@ public class TodoItem {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TodoItem todoItem = (TodoItem) o;
-        return Objects.equals(serialNumber, todoItem.serialNumber) && Objects.equals(description, todoItem.description) && state == todoItem.state && Objects.equals(creationDate, todoItem.creationDate) && Objects.equals(todoItemOwner, todoItem.todoItemOwner);
+        return Objects.equals(itemId, todoItem.itemId) && Objects.equals(description, todoItem.description) && state == todoItem.state && Objects.equals(creationDate, todoItem.creationDate) && Objects.equals(todoItemOwner, todoItem.todoItemOwner);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(serialNumber, description, state, creationDate, todoItemOwner);
+        return Objects.hash(itemId, description, state, creationDate, todoItemOwner);
     }
 
     @Override
     public String toString() {
         return "TodoItem{" +
-                "serialNumber=" + serialNumber +
+                "itemId=" + itemId +
                 ", description='" + description + '\'' +
                 ", state=" + state +
                 ", creationDate=" + creationDate +

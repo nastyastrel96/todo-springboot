@@ -9,4 +9,6 @@ public interface TodoItemRepository extends CrudRepository<TodoItem, Long> {
     List<TodoItem> findAllByTodoItemOwnerEquals(Long todoItemOwner);
 
     List<TodoItem> findTodoItemByDescriptionIgnoreCaseContainsAndTodoItemOwnerEquals(String word, Long todoItemOwner);
+
+    List<TodoItem> findAllByItemIdEquals(Long itemId);
 }
