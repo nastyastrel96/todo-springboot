@@ -30,10 +30,9 @@ public class TodoItemRestController {
     }
 
     @GetMapping("/todos")
-    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word,
-                                             @RequestParam(value = "t", required = false) String tag) {
+    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word) {
         User user = userService.getAuthenticatedUser().orElseThrow();
-        return todoItemService.findAllOrFilter(word, user, tag);
+        return todoItemService.findAllOrFilter(word, user);
     }
 
     @PatchMapping("/todos/{number}")
