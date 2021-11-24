@@ -100,7 +100,6 @@ public class TodoItemServiceImpl implements TodoItemService {
     @CacheEvict(key = "#itemId")
     public ResponseEntity<TodoItem> todoItemIsDone(Long itemId) {
         Optional<User> optionalUser = userService.getAuthenticatedUser();
-        optionalUser.map(user -> changeStateToDone(itemId, user));
         if (optionalUser.isPresent()) {
             Optional<TodoItem> optionalTodoItem = changeStateToDone(itemId, optionalUser.get());
             if (optionalTodoItem.isPresent()) {
