@@ -1,6 +1,5 @@
 package com.nastyastrel.springbootrest.service.todo;
 
-
 import com.nastyastrel.springbootrest.model.todo.TaskState;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
@@ -9,6 +8,9 @@ import com.nastyastrel.springbootrest.repository.TodoItemRepository;
 import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
 import com.nastyastrel.springbootrest.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@CacheConfig(cacheNames = "todoItems")
 public class TodoItemServiceImpl implements TodoItemService {
     private final TodoItemRepository todoItemRepository;
     private final ChuckNorrisClient chuckNorrisClient;
@@ -31,6 +34,7 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     @Override
+    @Cacheable(key = "#user.login")
     public List<TodoItem> findAll(User user) {
         return todoItemRepository.findAllByTodoItemOwnerEquals(user.getId());
     }
@@ -42,10 +46,11 @@ public class TodoItemServiceImpl implements TodoItemService {
 
     @Override
     @Transactional
-    public ResponseEntity<TodoItem> deleteTodoItem(Long number) {
+    @CacheEvict(key = "#itemId")
+    public ResponseEntity<TodoItem> deleteTodoItem(Long itemId) {
         Optional<User> optionalUser = userService.getAuthenticatedUser();
         if (optionalUser.isPresent()) {
-            Optional<TodoItem> optionalTodoItem = deleteItem(number, optionalUser.get());
+            Optional<TodoItem> optionalTodoItem = deleteItem(itemId, optionalUser.get());
             if (optionalTodoItem.isPresent()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -63,6 +68,7 @@ public class TodoItemServiceImpl implements TodoItemService {
     }
 
     @Override
+    @Cacheable(key = "#user.login")
     public ResponseEntity<?> findAllOrFilter(String word, User user) {
         if (word != null) {
             List<TodoItem> filteredTodoItems = filterTodoItems(word, user);
@@ -91,11 +97,12 @@ public class TodoItemServiceImpl implements TodoItemService {
 
 
     @Override
-    public ResponseEntity<TodoItem> todoItemIsDone(Long number) {
+    @CacheEvict(key = "#itemId")
+    public ResponseEntity<TodoItem> todoItemIsDone(Long itemId) {
         Optional<User> optionalUser = userService.getAuthenticatedUser();
-        optionalUser.map(user -> changeStateToDone(number, user));
+        optionalUser.map(user -> changeStateToDone(itemId, user));
         if (optionalUser.isPresent()) {
-            Optional<TodoItem> optionalTodoItem = changeStateToDone(number, optionalUser.get());
+            Optional<TodoItem> optionalTodoItem = changeStateToDone(itemId, optionalUser.get());
             if (optionalTodoItem.isPresent()) {
                 return new ResponseEntity<>(HttpStatus.OK);
             }

@@ -11,9 +11,9 @@ public interface TodoItemService {
 
     void save(TodoItem item);
 
-    ResponseEntity<TodoItem> deleteTodoItem(Long number);
+    ResponseEntity<TodoItem> deleteTodoItem(Long itemId);
 
     ResponseEntity<?> findAllOrFilter(String word, User user);
 
-    ResponseEntity<TodoItem> todoItemIsDone(Long number);
+    ResponseEntity<TodoItem> todoItemIsDone(Long itemId);
 }

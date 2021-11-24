@@ -1,20 +1,4 @@
 package com.nastyastrel.springbootrest.model.clientchucknorris;
 
-public class ChuckNorrisJoke {
-    private String value;
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    @Override
-    public String toString() {
-        return "ChuckNorrisJoke{" +
-                "value='" + value + '\'' +
-                '}';
-    }
+public record ChuckNorrisJoke(String value) {
 }

@@ -61,50 +61,24 @@ public class User implements UserDetails {
         return id;
     }
 
-    public void setId(Long serialNumber) {
-        this.id = serialNumber;
-    }
-
     public String getFirstName() {
         return firstName;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
 
     public String getLastName() {
         return lastName;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
 
     public String getLogin() {
         return login;
-    }
-
-    public void setLogin(String login) {
-        this.login = login;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
     }
 
     public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(Set<Role> roles) {
-        this.roles = roles;
-    }
 
     public List<TodoItem> getTasks() {
         return Collections.unmodifiableList(tasks);
@@ -114,7 +88,7 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         String roleName = null;
         for (Role role : roles) {
-            roleName = role.getName().toString();
+            roleName = role.getRoleName().toString();
         }
         return Set.of(new SimpleGrantedAuthority(roleName));
     }

@@ -1,6 +1,7 @@
 package com.nastyastrel.springbootrest.model.user;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Entity
 @Table(name = "todo_roles")
@@ -8,40 +9,46 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "role_id")
-    private Long id;
+    private Long roleId;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "name")
-    private RoleName name;
+    private RoleName roleName;
 
     public Role() {
     }
 
-    public Role(RoleName name) {
-        this.name = name;
+    public Role(Long roleId, RoleName roleName) {
+        this.roleId = roleId;
+        this.roleName = roleName;
     }
 
-    public Long getId() {
-        return id;
+    public Long getRoleId() {
+        return roleId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public RoleName getRoleName() {
+        return roleName;
     }
 
-    public RoleName getName() {
-        return name;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Role role = (Role) o;
+        return Objects.equals(roleId, role.roleId) && roleName == role.roleName;
     }
 
-    public void setName(RoleName name) {
-        this.name = name;
+    @Override
+    public int hashCode() {
+        return Objects.hash(roleId, roleName);
     }
 
     @Override
     public String toString() {
         return "Role{" +
-                "id=" + id +
-                ", name=" + name +
+                "roleId=" + roleId +
+                ", roleName=" + roleName +
                 '}';
     }
 }
