@@ -2,6 +2,7 @@ package com.nastyastrel.springbootrest.rest;
 
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.user.User;
+import com.nastyastrel.springbootrest.service.tag.TagService;
 import com.nastyastrel.springbootrest.service.todo.TodoItemService;
 import com.nastyastrel.springbootrest.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,16 @@ public class TodoItemRestController {
     @PostMapping("/todos")
     @ResponseStatus(HttpStatus.CREATED)
     public void save(@RequestBody TodoItem todoItem) {
+        User user = userService.getAuthenticatedUser().orElseThrow();
+        todoItem.setUserId(user.getUserId());
         todoItemService.save(todoItem);
     }
 
     @GetMapping("/todos")
-    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "q", required = false) String word) {
+    public ResponseEntity<?> findAllOrFilter(@RequestParam(value = "word", required = false) String word,
+                                             @RequestParam(value = "tag", required = false) String tagName) {
         User user = userService.getAuthenticatedUser().orElseThrow();
-        return todoItemService.findAllOrFilter(word, user);
+        return todoItemService.findAllOrFilter(word, user, tagName);
     }
 
     @PatchMapping("/todos/{number}")

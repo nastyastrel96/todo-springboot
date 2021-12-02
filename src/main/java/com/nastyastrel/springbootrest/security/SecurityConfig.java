@@ -36,23 +36,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .usersByUsernameQuery(
                         """
                                 SELECT login, password, enabled
-                                FROM todo_users
+                                FROM users
                                 WHERE login =?
                                 """)
                 .authoritiesByUsernameQuery(
                         """
-                                SELECT login,
-                                       name
-                                FROM (SELECT login,
-                                             role_id
-                                      FROM todo_users
-                                               INNER JOIN user_role on todo_users.user_id = user_role.user_id) tab1
-                                         INNER JOIN
-                                     (SELECT user_role.role_id,
-                                             name
-                                      FROM user_role
-                                               INNER JOIN todo_roles on user_role.role_id = todo_roles.role_id) tab2
-                                     ON tab1.role_id = tab2.role_id
+                                SELECT login, role
+                                FROM users t1 INNER JOIN user_role t2 ON t1.id = t2.users_id
+                                               INNER JOIN roles t3 ON t2.roles_id=t3.id
                                 WHERE login =?
                                 """);
     }
@@ -62,6 +53,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable().authorizeRequests()
                 .antMatchers("/api/todos/**").hasAuthority(RoleName.USER.toString())
+                .antMatchers("/api/tags/**").hasAuthority(RoleName.USER.toString())
                 .antMatchers("/api/users/**").hasAuthority(RoleName.ADMIN.toString())
                 .antMatchers("/**").permitAll()
                 .and().
