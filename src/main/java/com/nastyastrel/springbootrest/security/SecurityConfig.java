@@ -1,6 +1,5 @@
 package com.nastyastrel.springbootrest.security;
 
-
 import com.nastyastrel.springbootrest.model.user.RoleName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

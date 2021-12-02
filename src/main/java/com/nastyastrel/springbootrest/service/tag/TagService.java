@@ -1,7 +1,6 @@
 package com.nastyastrel.springbootrest.service.tag;
 
 import com.nastyastrel.springbootrest.model.tags.Tag;
-import com.nastyastrel.springbootrest.model.user.User;
 import org.springframework.http.ResponseEntity;
 
 public interface TagService {

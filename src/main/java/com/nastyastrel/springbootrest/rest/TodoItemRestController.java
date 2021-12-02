@@ -2,7 +2,6 @@ package com.nastyastrel.springbootrest.rest;
 
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.user.User;
-import com.nastyastrel.springbootrest.service.tag.TagService;
 import com.nastyastrel.springbootrest.service.todo.TodoItemService;
 import com.nastyastrel.springbootrest.service.user.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

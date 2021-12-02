@@ -1,7 +1,6 @@
 package com.nastyastrel.springbootrest.rest;
 
 import com.nastyastrel.springbootrest.model.tags.Tag;
-import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.user.User;
 import com.nastyastrel.springbootrest.service.tag.TagService;
 import com.nastyastrel.springbootrest.service.user.UserService;

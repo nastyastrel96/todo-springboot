@@ -1,7 +1,6 @@
 package com.nastyastrel.springbootrest.service.tag;
 
 import com.nastyastrel.springbootrest.model.tags.Tag;
-import com.nastyastrel.springbootrest.model.tags.TagDTO;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.repository.TagRepository;
 import com.nastyastrel.springbootrest.repository.TodoItemRepository;

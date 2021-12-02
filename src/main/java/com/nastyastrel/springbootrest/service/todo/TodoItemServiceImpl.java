@@ -1,7 +1,5 @@
 package com.nastyastrel.springbootrest.service.todo;
 
-import com.nastyastrel.springbootrest.model.tags.Tag;
-import com.nastyastrel.springbootrest.model.tags.TagDTO;
 import com.nastyastrel.springbootrest.model.todo.TaskState;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
