@@ -1,17 +1,19 @@
 package com.nastyastrel.springbootrest.model.todo;
 
+import com.nastyastrel.springbootrest.model.tags.Tag;
+import com.nastyastrel.springbootrest.model.tags.TagDTO;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
-@Table(name = "todo_items")
+@Table(name = "items")
 public class TodoItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "serial_number")
+    @Column(name = "id")
     private Long itemId;
 
     @Column(name = "description")
@@ -25,19 +27,32 @@ public class TodoItem {
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-    @Column(name = "item_owner")
-    private Long todoItemOwner;
+    @Column(name = "users_id")
+    private Long userId;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "item_tag",
+            joinColumns = @JoinColumn(name = "items_id"),
+            inverseJoinColumns = @JoinColumn(name = "tags_id"))
+    private List<Tag> tags = new ArrayList<>();
 
     public TodoItem() {
     }
 
-    public TodoItem(Long serialNumber, String description, TaskState state, LocalDateTime creationDate, Long todoItemOwner) {
-        this.itemId = serialNumber;
+    public TodoItem(Long itemId, String description, TaskState state, LocalDateTime creationDate, Long userId) {
+        this.itemId = itemId;
         this.description = description;
         this.state = state;
         this.creationDate = creationDate;
-        this.todoItemOwner = todoItemOwner;
+        this.userId = userId;
+    }
+
+    public void addTag(Tag tag) {
+        tags.add(tag);
+    }
+
+    public void deleteTag(Tag tag) {
+        tags.remove(tag);
     }
 
     public Long getItemId() {
@@ -56,12 +71,40 @@ public class TodoItem {
         return creationDate;
     }
 
-    public Long getTodoItemOwner() {
-        return todoItemOwner;
+    public Long getUserId() {
+        return userId;
     }
 
     public void setState(TaskState state) {
         this.state = state;
+    }
+
+    public List<TagDTO> getTags() {
+        List<TagDTO> dtoList = new ArrayList<>();
+        for (Tag tag : tags) {
+            dtoList.add(TagDTO.fromTag(tag));
+        }
+        return dtoList;
+    }
+
+    public void setItemId(Long itemId) {
+        this.itemId = itemId;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCreationDate(LocalDateTime creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
     }
 
     @Override
@@ -69,12 +112,12 @@ public class TodoItem {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TodoItem todoItem = (TodoItem) o;
-        return Objects.equals(itemId, todoItem.itemId) && Objects.equals(description, todoItem.description) && state == todoItem.state && Objects.equals(creationDate, todoItem.creationDate) && Objects.equals(todoItemOwner, todoItem.todoItemOwner);
+        return Objects.equals(itemId, todoItem.itemId) && Objects.equals(description, todoItem.description) && state == todoItem.state && Objects.equals(creationDate, todoItem.creationDate) && Objects.equals(userId, todoItem.userId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(itemId, description, state, creationDate, todoItemOwner);
+        return Objects.hash(itemId, description, state, creationDate, userId);
     }
 
     @Override
@@ -84,7 +127,7 @@ public class TodoItem {
                 ", description='" + description + '\'' +
                 ", state=" + state +
                 ", creationDate=" + creationDate +
-                ", todoItemOwner=" + todoItemOwner +
+                ", userId=" + userId +
                 '}';
     }
 }

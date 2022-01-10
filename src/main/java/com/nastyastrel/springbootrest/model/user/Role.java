@@ -4,15 +4,15 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
-@Table(name = "todo_roles")
+@Table(name = "roles")
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "role_id")
+    @Column(name = "id")
     private Long roleId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "name")
+    @Column(name = "role")
     private RoleName roleName;
 
     public Role() {

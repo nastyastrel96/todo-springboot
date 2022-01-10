@@ -1,70 +1,92 @@
 package com.nastyastrel.springbootrest.model.tags;
 
+import com.nastyastrel.springbootrest.model.todo.TodoItem;
+
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 @Entity
-@Table(name = "todo_tags")
+@Table(name = "tags")
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "tag_id")
+    @Column(name = "id")
     private Long tagId;
 
     @Column(name = "tag")
     private String tagName;
 
-    @Column(name = "user_id")
+    @Column(name = "users_id")
     private Long userId;
 
-    @Column(name = "todo")
-    private Long itemId;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "item_tag",
+            joinColumns = @JoinColumn(name = "tags_id"),
+            inverseJoinColumns = @JoinColumn(name = "items_id"))
+    private List<TodoItem> todoItems = new ArrayList<>();
 
-
-    protected Tag() {
+    public Tag() {
     }
 
-    public Tag(Long tagId, String tag) {
+    public Tag(Long tagId, String tagName, Long userId) {
         this.tagId = tagId;
-        this.tagName = tag;
+        this.tagName = tagName;
+        this.userId = userId;
     }
 
     public Long getTagId() {
         return tagId;
     }
 
+    public void setTagId(Long tagId) {
+        this.tagId = tagId;
+    }
+
     public String getTagName() {
         return tagName;
+    }
+
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
     }
 
     public Long getUserId() {
         return userId;
     }
 
-    public Long getItemId() {
-        return itemId;
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public List<TodoItem> getTodoItems() {
+        return todoItems;
+    }
+
+    public void setTodoItems(List<TodoItem> todoItems) {
+        this.todoItems = todoItems;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Tag tag1 = (Tag) o;
-        return Objects.equals(tagId, tag1.tagId) && Objects.equals(tagName, tag1.tagName) && Objects.equals(userId, tag1.userId) && Objects.equals(itemId, tag1.itemId);
+        Tag tag = (Tag) o;
+        return Objects.equals(tagId, tag.tagId) && Objects.equals(tagName, tag.tagName) && Objects.equals(userId, tag.userId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tagId, tagName, userId, itemId);
+        return Objects.hash(tagId, tagName, userId);
     }
 
     @Override
     public String toString() {
         return "Tag{" +
                 "tagId=" + tagId +
-                ", tag='" + tagName + '\'' +
+                ", tagName='" + tagName + '\'' +
                 ", userId=" + userId +
-                ", itemId=" + itemId +
                 '}';
     }
 }

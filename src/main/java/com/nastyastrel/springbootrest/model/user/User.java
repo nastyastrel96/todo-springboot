@@ -11,14 +11,12 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@Table(name = "todo_users", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "login")
-})
+@Table(name = "users")
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "user_id")
-    private Long id;
+    @Column(name = "id")
+    private Long userId;
 
     @Column(name = "first_name")
     private String firstName;
@@ -38,27 +36,27 @@ public class User implements UserDetails {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+            joinColumns = @JoinColumn(name = "users_id"),
+            inverseJoinColumns = @JoinColumn(name = "roles_id"))
     private Set<Role> roles = new HashSet<>();
 
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "item_owner")
-    private List<TodoItem> tasks = new ArrayList<>();
+    @JoinColumn(name = "users_id")
+    private List<TodoItem> todoList = new ArrayList<>();
 
 
     public User() {
     }
 
     public User(Long id, String firstName, String lastName, String login) {
-        this.id = id;
+        this.userId = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.login = login;
     }
 
-    public Long getId() {
-        return id;
+    public Long getUserId() {
+        return userId;
     }
 
     public String getFirstName() {
@@ -80,8 +78,8 @@ public class User implements UserDetails {
     }
 
 
-    public List<TodoItem> getTasks() {
-        return Collections.unmodifiableList(tasks);
+    public List<TodoItem> getTodoList() {
+        return Collections.unmodifiableList(todoList);
     }
 
     @Override
@@ -128,25 +126,25 @@ public class User implements UserDetails {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return enabled == user.enabled && Objects.equals(id, user.id) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(roles, user.roles) && Objects.equals(tasks, user.tasks);
+        return enabled == user.enabled && Objects.equals(userId, user.userId) && Objects.equals(firstName, user.firstName) && Objects.equals(lastName, user.lastName) && Objects.equals(login, user.login) && Objects.equals(password, user.password) && Objects.equals(roles, user.roles) && Objects.equals(todoList, user.todoList);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, firstName, lastName, login, password, enabled, roles, tasks);
+        return Objects.hash(userId, firstName, lastName, login, password, enabled, roles, todoList);
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
+                "userId=" + userId +
                 ", firstName='" + firstName + '\'' +
                 ", lastName='" + lastName + '\'' +
                 ", login='" + login + '\'' +
                 ", password='" + password + '\'' +
                 ", enabled=" + enabled +
                 ", roles=" + roles +
-                ", tasks=" + tasks +
+                ", todoList=" + todoList +
                 '}';
     }
 }

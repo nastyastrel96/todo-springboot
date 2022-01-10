@@ -13,7 +13,7 @@ public interface TodoItemService {
 
     ResponseEntity<TodoItem> deleteTodoItem(Long itemId);
 
-    ResponseEntity<?> findAllOrFilter(String word, User user);
+    ResponseEntity<?> findAllOrFilter(String word, User user, String tagName);
 
     ResponseEntity<TodoItem> todoItemIsDone(Long itemId);
 }
