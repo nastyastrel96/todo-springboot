@@ -29,8 +29,8 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public ResponseEntity<Tag> assignTag(Long userId, Long itemId, Long tagId) {
-        Optional<Tag> tagOptional = tagRepository.findById(tagId);
         Optional<TodoItem> todoItemOptional = todoItemRepository.findById(itemId);
+        Optional<Tag> tagOptional = tagRepository.findById(tagId);
         if (tagOptional.filter(tag -> tag.getUserId().equals(userId)).isPresent()) {
             if (todoItemOptional.filter(todoItem -> todoItem.getUserId().equals(userId)).isPresent()) {
                 TodoItem todoItem = todoItemOptional.get();
@@ -43,8 +43,8 @@ public class TagServiceImpl implements TagService {
 
     @Override
     public ResponseEntity<Tag> deleteTag(Long userId, Long itemId, Long tagId) {
-        Optional<Tag> tagOptional = tagRepository.findById(tagId);
         Optional<TodoItem> todoItemOptional = todoItemRepository.findById(itemId);
+        Optional<Tag> tagOptional = tagRepository.findById(tagId);
         if (tagOptional.filter(tag -> tag.getUserId().equals(userId)).isPresent()) {
             if (todoItemOptional.filter(todoItem -> todoItem.getUserId().equals(userId)).isPresent()) {
                 TodoItem todoItem = todoItemOptional.get();
