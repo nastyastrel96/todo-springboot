@@ -1,6 +1,7 @@
 package com.nastyastrel.springbootrest.security;
 
 import com.nastyastrel.springbootrest.model.user.RoleName;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,19 +15,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import javax.sql.DataSource;
 
 @Configuration
+@AllArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final DataSource dataSource;
-
-    @Autowired
-    public SecurityConfig(DataSource dataSource) {
-        this.dataSource = dataSource;
-    }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -55,10 +50,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/tags/**").hasAuthority(RoleName.USER.toString())
                 .antMatchers("/api/users/**").hasAuthority(RoleName.ADMIN.toString())
                 .antMatchers("/**").permitAll()
-                .and().
-                httpBasic().
-                and().
-                sessionManagement().
-                sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .and()
+                .httpBasic()
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }
 }

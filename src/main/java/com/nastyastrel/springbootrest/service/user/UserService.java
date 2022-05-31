@@ -2,6 +2,7 @@ package com.nastyastrel.springbootrest.service.user;
 
 import com.nastyastrel.springbootrest.model.user.User;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,5 +13,5 @@ public interface UserService {
 
     Optional<User> findByLogin(String login);
 
-    Optional<User> getAuthenticatedUser();
+    User getAuthenticatedUser(Principal principal);
 }

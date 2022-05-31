@@ -1,4 +1,4 @@
-package com.nastyastrel.springbootrest.service.cache;
+package com.nastyastrel.springbootrest.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
@@ -12,20 +12,6 @@ import java.util.concurrent.TimeUnit;
 @Configuration
 @EnableCaching
 public class CacheConfig {
-//    @Bean
-//    public Caffeine caffeineConfig() {
-//        return Caffeine.newBuilder()
-//                .expireAfterWrite(60, TimeUnit.MINUTES);
-//    }
-//
-//    @Bean
-//    public CacheManager cacheManager(Caffeine caffeine) {
-//        CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
-//        caffeineCacheManager.getCache("addresses");
-//        caffeineCacheManager.setCaffeine(caffeine);
-//        return caffeineCacheManager;
-//    }
-
     @Bean
     public CacheManager cacheManager() {
         CaffeineCacheManager cacheManager = new CaffeineCacheManager();
@@ -38,6 +24,7 @@ public class CacheConfig {
                 .initialCapacity(100)
                 .maximumSize(500)
                 .expireAfterAccess(30, TimeUnit.MINUTES)
+                .expireAfterWrite(1, TimeUnit.SECONDS)
                 .weakKeys()
                 .recordStats();
     }

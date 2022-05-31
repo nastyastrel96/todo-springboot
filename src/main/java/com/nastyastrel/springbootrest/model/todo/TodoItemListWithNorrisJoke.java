@@ -1,6 +1,6 @@
 package com.nastyastrel.springbootrest.model.todo;
 
-import com.nastyastrel.springbootrest.model.clientchucknorris.ChuckNorrisJoke;
+import com.nastyastrel.springbootrest.model.chucknorris.ChuckNorrisJoke;
 
 import java.util.List;
 

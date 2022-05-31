@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class UserServiceTest {
+class UserServiceImplTest {
     @Mock
     private UserRepository userRepository;
 
@@ -58,7 +60,7 @@ class UserServiceTest {
     void itShouldFindUserByLogin() {
         //given
         User user = new User(3L, "Filipp", "Kirkorov", "filipp");
-        when(userRepository.findByLogin(user.getLogin())).thenReturn(Optional.of(user));
+        when(userRepository.findByLogin(eq(user.getLogin()))).thenReturn(Optional.of(user));
 
         //when
         var answer = underTest.findByLogin(user.getLogin());
@@ -66,5 +68,21 @@ class UserServiceTest {
         //then
         verify(userRepository).findByLogin(user.getLogin());
         assertEquals(Optional.of(user), answer);
+    }
+
+    @Test
+    void itShouldFindUserByLoginFromPrincipal() {
+        //given
+        User user = new User(3L, "Filipp", "Kirkorov", "filipp");
+        Principal principal = new UsernamePasswordAuthenticationToken("filipp", "filipp");
+        when(userRepository.findByLogin(eq(user.getLogin()))).thenReturn(Optional.of(user));
+
+        //when
+        var answer = underTest.getAuthenticatedUser(principal);
+
+        //then
+        verify(userRepository).findByLogin(principal.getName());
+        assertEquals(user, answer);
+
     }
 }

@@ -1,47 +1,34 @@
 package com.nastyastrel.springbootrest.service.todo;
 
+import com.nastyastrel.springbootrest.exception.NoSuchIdItemException;
+import com.nastyastrel.springbootrest.exception.NoSuchTagException;
+import com.nastyastrel.springbootrest.exception.NoSuchItemAndTagException;
+import com.nastyastrel.springbootrest.exception.NoWordForFilteringFoundException;
 import com.nastyastrel.springbootrest.model.todo.TaskState;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
-import com.nastyastrel.springbootrest.model.user.User;
-import com.nastyastrel.springbootrest.repository.TagRepository;
 import com.nastyastrel.springbootrest.repository.TodoItemRepository;
 import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
-import com.nastyastrel.springbootrest.service.user.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 @CacheConfig(cacheNames = "todoItems")
+@AllArgsConstructor
 public class TodoItemServiceImpl implements TodoItemService {
     private final TodoItemRepository todoItemRepository;
     private final ChuckNorrisClient chuckNorrisClient;
-    private final UserService userService;
-    private final TagRepository tagRepository;
-
-    @Autowired
-    public TodoItemServiceImpl(TodoItemRepository repository, ChuckNorrisClient chuckNorrisClient, UserService userService, TagRepository tagRepository) {
-        this.todoItemRepository = repository;
-        this.chuckNorrisClient = chuckNorrisClient;
-        this.userService = userService;
-        this.tagRepository = tagRepository;
-    }
 
     @Override
-    @Cacheable(key = "#user.login")
-    public List<TodoItem> findAll(User user) {
-        return todoItemRepository.findAllByUserIdEquals(user.getUserId());
+    @Cacheable(key = "#userId")
+    public List<TodoItem> findAll(Long userId) {
+        return todoItemRepository.findAllByUserIdEquals(userId);
     }
 
     @Override
@@ -52,47 +39,62 @@ public class TodoItemServiceImpl implements TodoItemService {
     @Override
     @Transactional
     @CacheEvict(key = "#itemId")
-    public ResponseEntity<TodoItem> deleteTodoItem(Long itemId) {
-        Optional<User> optionalUser = userService.getAuthenticatedUser();
-        if (optionalUser.isPresent()) {
-            Optional<TodoItem> optionalTodoItem = deleteItem(itemId, optionalUser.get());
-            if (optionalTodoItem.isPresent()) {
-                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-            } else return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    public void deleteTodoItem(Long itemId, Long userId) {
+        Optional<TodoItem> optionalTodoItem = deleteItem(itemId, userId);
+        if (optionalTodoItem.isEmpty()) {
+            throw new NoSuchIdItemException(itemId.toString());
+        }
     }
 
-    private Optional<TodoItem> deleteItem(Long serialNumber, User user) {
-        Optional<TodoItem> todoItemOptional = todoItemRepository.findById(serialNumber);
-        return todoItemOptional.filter(todoItem -> user.getUserId().equals(todoItem.getUserId())).map(
+    private Optional<TodoItem> deleteItem(Long itemId, Long userId) {
+        Optional<TodoItem> todoItemOptional = todoItemRepository.findById(itemId);
+        return todoItemOptional.filter(todoItem -> userId.equals(todoItem.getUserId())).map(
                 todoItem -> {
-                    todoItemRepository.deleteById(serialNumber);
+                    todoItemRepository.deleteById(itemId);
                     return todoItem;
                 }
         );
     }
 
     @Override
-    @Cacheable(key = "#user.login")
-    public ResponseEntity<?> findAllOrFilter(String word, User user, String tagName) {
-        if (word != null) {
-            List<TodoItem> filteredTodoItems = filterTodoItemsByWord(word, user);
+    @Cacheable(key = "#userId")
+    public TodoItemListWithNorrisJoke findAllOrFilter(String word, Long userId, String tagName) {
+        if (word != null && tagName != null) {
+            List<TodoItem> filteredTodoItemsByWordAndTag = filterTodoItemsByWordAndTag(word, userId, tagName);
+            if (filteredTodoItemsByWordAndTag.isEmpty()) {
+                throw new NoSuchItemAndTagException();
+            }
+            return new TodoItemListWithNorrisJoke(filteredTodoItemsByWordAndTag, null);
+        } else if (word == null && tagName == null) {
+            List<TodoItem> allTodoItems = findAll(userId);
+            if (!isEachTaskStateHasStateDone(allTodoItems)) {
+                return new TodoItemListWithNorrisJoke(allTodoItems, null);
+            } else return getTodoItemWithNorrisJoke(findAll(userId));
+        } else if (word != null) {
+            List<TodoItem> filteredTodoItems = filterTodoItemsByWord(word, userId);
             if (filteredTodoItems.isEmpty()) {
-                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                throw new NoWordForFilteringFoundException(word);
             } else
-                return new ResponseEntity<>(filteredTodoItems, HttpStatus.OK);
+                return new TodoItemListWithNorrisJoke(filteredTodoItems, null);
+        } else {
+            List<TodoItem> filteredTodoItemsByTag = filterTodoItemsByTag(userId, tagName);
+            if (filteredTodoItemsByTag.isEmpty()) {
+                throw new NoSuchTagException(tagName);
+            }
+            return new TodoItemListWithNorrisJoke(filteredTodoItemsByTag, null);
         }
-        List<TodoItem> allTodoItems = findAll(user);
-        if (!isEachTaskStateHasStateDone(allTodoItems)) {
-            return new ResponseEntity<>(allTodoItems, HttpStatus.OK);
-        }
-        if (tagName != null) {
-            return new ResponseEntity<>(filterTodoItemsByTag(allTodoItems, tagName), HttpStatus.OK);
-        } else return new ResponseEntity<>(getTodoItemWithNorrisJoke(allTodoItems), HttpStatus.OK);
     }
 
-    private List<TodoItem> filterTodoItemsByWord(String word, User user) {
-        return todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndUserIdEquals(word, user.getUserId());
+    private List<TodoItem> filterTodoItemsByWordAndTag(String word, Long userId, String tagName) {
+        return todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndUserIdEqualsAndTagsTagNameEquals(word, userId, tagName);
+    }
+
+    private List<TodoItem> filterTodoItemsByWord(String word, Long userId) {
+        return todoItemRepository.findTodoItemByDescriptionIgnoreCaseContainsAndUserIdEquals(word, userId);
+    }
+
+    private List<TodoItem> filterTodoItemsByTag(Long userId, String tagName) {
+        return todoItemRepository.findByUserIdEqualsAndTagsTagNameEquals(userId, tagName);
     }
 
     private boolean isEachTaskStateHasStateDone(List<TodoItem> todoItemList) {
@@ -103,30 +105,16 @@ public class TodoItemServiceImpl implements TodoItemService {
         return new TodoItemListWithNorrisJoke(todoItemList, chuckNorrisClient.getChuckNorrisJoke());
     }
 
-    private List<TodoItem> filterTodoItemsByTag(List<TodoItem> list, String tagName) {
-        List<TodoItem> todoItemListToBeFiltered = new ArrayList<>();
-        for (TodoItem todoItem : list) {
-            todoItem.getTags().stream().filter(tagDTO -> tagDTO.getTagName().equals(tagName)).findAny().ifPresent(tagDTO -> todoItemListToBeFiltered.add(todoItem));
-        }
-        return todoItemListToBeFiltered;
-    }
-
     @Override
     @CacheEvict(key = "#itemId")
-    public ResponseEntity<TodoItem> todoItemIsDone(Long itemId) {
-        Optional<User> optionalUser = userService.getAuthenticatedUser();
-        if (optionalUser.isPresent()) {
-            Optional<TodoItem> optionalTodoItem = changeStateToDone(itemId, optionalUser.get());
-            if (optionalTodoItem.isPresent()) {
-                return new ResponseEntity<>(HttpStatus.OK);
-            }
-        }
-        return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+    public TodoItem changeToDone(Long itemId, Long userId) {
+        Optional<TodoItem> optionalTodoItem = changeStateToDone(itemId, userId);
+        return optionalTodoItem.orElseThrow(() -> new NoSuchIdItemException(itemId.toString()));
     }
 
-    private Optional<TodoItem> changeStateToDone(Long itemId, User user) {
+    private Optional<TodoItem> changeStateToDone(Long itemId, Long userId) {
         Optional<TodoItem> todoItemOptional = todoItemRepository.findById(itemId);
-        return todoItemOptional.filter(todoItem -> user.getUserId().equals(todoItem.getUserId())).map(
+        return todoItemOptional.filter(todoItem -> userId.equals(todoItem.getUserId())).map(
                 todoItem -> {
                     todoItem.setState(TaskState.DONE);
                     save(todoItem);

@@ -2,26 +2,21 @@ package com.nastyastrel.springbootrest.service.user;
 
 import com.nastyastrel.springbootrest.model.user.User;
 import com.nastyastrel.springbootrest.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @CacheConfig(cacheNames = "users")
+@AllArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-
-    @Autowired
-    public UserServiceImpl(UserRepository repository) {
-        this.userRepository = repository;
-    }
 
     @Override
     public List<User> findAll() {
@@ -42,8 +37,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> getAuthenticatedUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return findByLogin(authentication.getName());
+    public User getAuthenticatedUser(Principal principal) {
+        return userRepository.findByLogin(principal.getName()).get();
     }
 }

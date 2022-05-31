@@ -1,6 +1,7 @@
 package com.nastyastrel.springbootrest.model.tags;
 
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "tags")
+@NoArgsConstructor
 public class Tag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,9 +28,6 @@ public class Tag {
             joinColumns = @JoinColumn(name = "tags_id"),
             inverseJoinColumns = @JoinColumn(name = "items_id"))
     private List<TodoItem> todoItems = new ArrayList<>();
-
-    public Tag() {
-    }
 
     public Tag(Long tagId, String tagName, Long userId) {
         this.tagId = tagId;

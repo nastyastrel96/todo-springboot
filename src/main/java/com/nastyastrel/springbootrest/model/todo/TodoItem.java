@@ -34,7 +34,7 @@ public class TodoItem {
     @JoinTable(name = "item_tag",
             joinColumns = @JoinColumn(name = "items_id"),
             inverseJoinColumns = @JoinColumn(name = "tags_id"))
-    private List<Tag> tags = new ArrayList<>();
+    private Set<Tag> tags = new HashSet<>();
 
     public TodoItem() {
     }
@@ -103,7 +103,7 @@ public class TodoItem {
         this.userId = userId;
     }
 
-    public void setTags(List<Tag> tags) {
+    public void setTags(Set<Tag> tags) {
         this.tags = tags;
     }
 
