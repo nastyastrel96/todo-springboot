@@ -30,7 +30,7 @@ public class TodoItem {
     @Column(name = "users_id")
     private Long userId;
 
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "item_tag",
             joinColumns = @JoinColumn(name = "items_id"),
             inverseJoinColumns = @JoinColumn(name = "tags_id"))
@@ -41,6 +41,13 @@ public class TodoItem {
 
     public TodoItem(Long itemId, String description, TaskState state, LocalDateTime creationDate, Long userId) {
         this.itemId = itemId;
+        this.description = description;
+        this.state = state;
+        this.creationDate = creationDate;
+        this.userId = userId;
+    }
+
+    public TodoItem(String description, TaskState state, LocalDateTime creationDate, Long userId) {
         this.description = description;
         this.state = state;
         this.creationDate = creationDate;
@@ -112,12 +119,12 @@ public class TodoItem {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         TodoItem todoItem = (TodoItem) o;
-        return Objects.equals(itemId, todoItem.itemId) && Objects.equals(description, todoItem.description) && state == todoItem.state && Objects.equals(creationDate, todoItem.creationDate) && Objects.equals(userId, todoItem.userId);
+        return Objects.equals(itemId, todoItem.itemId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(itemId, description, state, creationDate, userId);
+        return itemId != null ? itemId.hashCode() : 0;
     }
 
     @Override

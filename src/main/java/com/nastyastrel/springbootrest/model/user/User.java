@@ -2,6 +2,8 @@ package com.nastyastrel.springbootrest.model.user;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,6 +14,7 @@ import java.util.*;
 
 @Entity
 @Table(name = "users")
+@NoArgsConstructor
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,15 +47,20 @@ public class User implements UserDetails {
     @JoinColumn(name = "users_id")
     private List<TodoItem> todoList = new ArrayList<>();
 
-
-    public User() {
-    }
-
     public User(Long id, String firstName, String lastName, String login) {
         this.userId = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.login = login;
+    }
+
+    public User(Long userId, String firstName, String lastName, String login, String password, boolean enabled) {
+        this.userId = userId;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.login = login;
+        this.password = password;
+        this.enabled = enabled;
     }
 
     public Long getUserId() {
