@@ -1,5 +1,6 @@
 package com.nastyastrel.springbootrest.service.todo;
 
+import com.nastyastrel.springbootrest.cache.RedisConfig;
 import com.nastyastrel.springbootrest.exception.NoSuchIdItemException;
 import com.nastyastrel.springbootrest.exception.NoSuchTagException;
 import com.nastyastrel.springbootrest.exception.NoSuchItemAndTagException;
@@ -10,35 +11,31 @@ import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 import com.nastyastrel.springbootrest.repository.TodoItemRepository;
 import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
 import lombok.AllArgsConstructor;
-import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
 @Service
-@CacheConfig(cacheNames = "todoItems")
 @AllArgsConstructor
 public class TodoItemServiceImpl implements TodoItemService {
     private final TodoItemRepository todoItemRepository;
     private final ChuckNorrisClient chuckNorrisClient;
 
     @Override
-    @Cacheable(key = "#userId")
     public List<TodoItem> findAll(Long userId) {
         return todoItemRepository.findAllByUserIdEquals(userId);
     }
 
+    @CacheEvict(cacheNames = RedisConfig.TODO_ITEMS, key = "#item.userId")
     @Override
     public void save(TodoItem item) {
         todoItemRepository.save(item);
     }
 
+    @CacheEvict(cacheNames = RedisConfig.TODO_ITEMS, key = "#userId")
     @Override
-    @Transactional
-    @CacheEvict(key = "#itemId")
     public void deleteTodoItem(Long itemId, Long userId) {
         Optional<TodoItem> optionalTodoItem = deleteItem(itemId, userId);
         if (optionalTodoItem.isEmpty()) {
@@ -56,8 +53,8 @@ public class TodoItemServiceImpl implements TodoItemService {
         );
     }
 
+    @Cacheable(cacheNames = RedisConfig.TODO_ITEMS, key = "#userId", condition = "#word==null && #tagName==null")
     @Override
-    @Cacheable(key = "#userId")
     public TodoItemListWithNorrisJoke findAllOrFilter(String word, Long userId, String tagName) {
         if (word != null && tagName != null) {
             List<TodoItem> filteredTodoItemsByWordAndTag = filterTodoItemsByWordAndTag(word, userId, tagName);
@@ -105,8 +102,8 @@ public class TodoItemServiceImpl implements TodoItemService {
         return new TodoItemListWithNorrisJoke(todoItemList, chuckNorrisClient.getChuckNorrisJoke());
     }
 
+    @CacheEvict(cacheNames = RedisConfig.TODO_ITEMS, key = "#userId")
     @Override
-    @CacheEvict(key = "#itemId")
     public TodoItem changeToDone(Long itemId, Long userId) {
         Optional<TodoItem> optionalTodoItem = changeStateToDone(itemId, userId);
         return optionalTodoItem.orElseThrow(() -> new NoSuchIdItemException(itemId.toString()));

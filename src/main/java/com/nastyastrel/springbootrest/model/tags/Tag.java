@@ -4,9 +4,7 @@ import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Entity
 @Table(name = "tags")
@@ -27,7 +25,7 @@ public class Tag {
     @JoinTable(name = "item_tag",
             joinColumns = @JoinColumn(name = "tags_id"),
             inverseJoinColumns = @JoinColumn(name = "items_id"))
-    private List<TodoItem> todoItems = new ArrayList<>();
+    private Set<TodoItem> todoItems = new HashSet<>();
 
     public Tag(Long tagId, String tagName, Long userId) {
         this.tagId = tagId;
@@ -59,11 +57,11 @@ public class Tag {
         this.userId = userId;
     }
 
-    public List<TodoItem> getTodoItems() {
+    public Set<TodoItem> getTodoItems() {
         return todoItems;
     }
 
-    public void setTodoItems(List<TodoItem> todoItems) {
+    public void setTodoItems(Set<TodoItem> todoItems) {
         this.todoItems = todoItems;
     }
 
