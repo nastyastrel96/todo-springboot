@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 
 @RestController
@@ -26,6 +28,7 @@ public class TodoItemRestController {
     public void save(@RequestBody TodoItem todoItem, Principal principal) {
         User user = userService.getAuthenticatedUser(principal);
         todoItem.setUserId(user.getUserId());
+        todoItem.setCreationDate(LocalDateTime.now());
         todoItemService.save(todoItem);
     }
 

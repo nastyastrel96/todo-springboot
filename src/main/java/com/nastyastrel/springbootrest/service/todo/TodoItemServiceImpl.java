@@ -9,12 +9,14 @@ import com.nastyastrel.springbootrest.model.todo.TaskState;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 import com.nastyastrel.springbootrest.repository.TodoItemRepository;
+import com.nastyastrel.springbootrest.repository.UserRepository;
 import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
+import java.time.*;
 import java.util.*;
 
 @Service
@@ -64,8 +66,9 @@ public class TodoItemServiceImpl implements TodoItemService {
             return new TodoItemListWithNorrisJoke(filteredTodoItemsByWordAndTag, null);
         } else if (word == null && tagName == null) {
             List<TodoItem> allTodoItems = findAll(userId);
-            if (!isEachTaskStateHasStateDone(allTodoItems)) {
-                return new TodoItemListWithNorrisJoke(allTodoItems, null);
+            List<TodoItem> todoItemsWithHandledRepeatability = handleRepeatability(allTodoItems, userId);
+            if (!isEachTaskStateHasStateDone(todoItemsWithHandledRepeatability)) {
+                return new TodoItemListWithNorrisJoke(todoItemsWithHandledRepeatability, null);
             } else return getTodoItemWithNorrisJoke(findAll(userId));
         } else if (word != null) {
             List<TodoItem> filteredTodoItems = filterTodoItemsByWord(word, userId);
@@ -118,5 +121,18 @@ public class TodoItemServiceImpl implements TodoItemService {
                     return todoItem;
                 }
         );
+    }
+
+    private List<TodoItem> handleRepeatability(List<TodoItem> todoItems, Long userId) {
+        todoItems.stream()
+                .filter(TodoItem::isRepeatable)
+                .filter(todoItem -> todoItem.getState().equals(TaskState.DONE))
+                .filter(todoItem -> (LocalTime.now().compareTo(todoItem.getUpdatingTime()) >= 0))
+                .forEach(todoItem -> {
+                    todoItemRepository.save(new TodoItem(todoItem.getDescription(), TaskState.UNDONE, true, todoItem.getUpdatingTime(), LocalDateTime.of(LocalDate.now(), todoItem.getUpdatingTime()), todoItem.getUserId()));
+                    todoItem.setRepeatable(false);
+                    todoItemRepository.save(todoItem);
+                });
+        return findAll(userId);
     }
 }

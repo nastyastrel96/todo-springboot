@@ -4,13 +4,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.nastyastrel.springbootrest.model.tags.Tag;
 import com.nastyastrel.springbootrest.model.tags.TagDTO;
-import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 @Entity
@@ -28,8 +30,15 @@ public class TodoItem {
     @Enumerated(EnumType.STRING)
     private TaskState state;
 
+    @Column(name = "repeatable")
+    private boolean repeatable;
+
+    @Column(name = "updating_time")
+    @JsonSerialize(using = LocalTimeSerializer.class)
+    @JsonDeserialize(using = LocalTimeDeserializer.class)
+    private LocalTime updatingTime;
+
     @Column(name = "creation_date")
-    @CreationTimestamp
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm")
@@ -37,6 +46,9 @@ public class TodoItem {
 
     @Column(name = "users_id")
     private Long userId;
+
+    @Column(name = "parent_item_id")
+    private Long parentId;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "item_tag",
@@ -55,9 +67,11 @@ public class TodoItem {
         this.userId = userId;
     }
 
-    public TodoItem(String description, TaskState state, LocalDateTime creationDate, Long userId) {
+    public TodoItem(String description, TaskState state, boolean repeatable, LocalTime updatingTime, LocalDateTime creationDate, Long userId) {
         this.description = description;
         this.state = state;
+        this.repeatable = repeatable;
+        this.updatingTime = updatingTime;
         this.creationDate = creationDate;
         this.userId = userId;
     }
@@ -122,6 +136,30 @@ public class TodoItem {
         this.tags = tags;
     }
 
+    public boolean isRepeatable() {
+        return repeatable;
+    }
+
+    public void setRepeatable(boolean repeatable) {
+        this.repeatable = repeatable;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public void setParentId(Long parentId) {
+        this.parentId = parentId;
+    }
+
+    public LocalTime getUpdatingTime() {
+        return updatingTime;
+    }
+
+    public void setUpdatingTime(LocalTime updatingTime) {
+        this.updatingTime = updatingTime;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -141,8 +179,12 @@ public class TodoItem {
                 "itemId=" + itemId +
                 ", description='" + description + '\'' +
                 ", state=" + state +
+                ", repeatable=" + repeatable +
+                ", updatingTime=" + updatingTime +
                 ", creationDate=" + creationDate +
                 ", userId=" + userId +
+                ", parentId=" + parentId +
+                ", tags=" + tags +
                 '}';
     }
 }
