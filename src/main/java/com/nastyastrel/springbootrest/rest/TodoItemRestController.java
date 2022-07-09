@@ -5,6 +5,7 @@ import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 import com.nastyastrel.springbootrest.model.user.User;
 import com.nastyastrel.springbootrest.service.todo.TodoItemService;
 import com.nastyastrel.springbootrest.service.user.UserService;
+import com.nastyastrel.springbootrest.tree.TodoItemResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.util.List;
 
 
 @RestController
@@ -32,12 +33,18 @@ public class TodoItemRestController {
         todoItemService.save(todoItem);
     }
 
-    @GetMapping("/todos")
+    @GetMapping("/todos/filter")
     public ResponseEntity<TodoItemListWithNorrisJoke> findAllOrFilter(@RequestParam(value = "word", required = false) String word,
                                                                       @RequestParam(value = "tag", required = false) String tagName,
                                                                       Principal principal) {
         User user = userService.getAuthenticatedUser(principal);
         return new ResponseEntity<>(todoItemService.findAllOrFilter(word, user.getUserId(), tagName), HttpStatus.OK);
+    }
+
+    @GetMapping("/todos")
+    public ResponseEntity<List<TodoItemResponse>> getTree(Principal principal) {
+        User user = userService.getAuthenticatedUser(principal);
+        return new ResponseEntity<>(todoItemService.getTree(user.getUserId()), HttpStatus.OK);
     }
 
     @PatchMapping("/todos/{number}")

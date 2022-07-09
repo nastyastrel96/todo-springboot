@@ -9,8 +9,8 @@ import com.nastyastrel.springbootrest.model.todo.TaskState;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 import com.nastyastrel.springbootrest.repository.TodoItemRepository;
-import com.nastyastrel.springbootrest.repository.UserRepository;
 import com.nastyastrel.springbootrest.restclient.ChuckNorrisClient;
+import com.nastyastrel.springbootrest.tree.TodoItemResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -134,5 +134,17 @@ public class TodoItemServiceImpl implements TodoItemService {
                     todoItemRepository.save(todoItem);
                 });
         return findAll(userId);
+    }
+
+    @Override
+    public List<TodoItemResponse> getTree(Long userId) {
+        List<TodoItem> todoItems = findAll(userId);
+        Map<Long, TodoItemResponse> todoItemsWithSubtasks = new HashMap<>();
+        List<TodoItemResponse> root = new ArrayList<>();
+        todoItems.forEach(todoItem -> todoItemsWithSubtasks.put(todoItem.getItemId(), new TodoItemResponse(todoItem.getItemId(), todoItem.getDescription(), todoItem.getState(), new ArrayList<>())));
+        todoItems.stream().filter(todoItem -> todoItem.getParentId() != null).forEach(todoItem -> todoItemsWithSubtasks.get(todoItem.getParentId()).subtasks().add(todoItemsWithSubtasks.get(todoItem.getItemId())));
+        todoItems.stream().filter(todoItem -> todoItem.getParentId() == null).forEach(todoItem -> root.add(new TodoItemResponse(todoItem.getItemId(), todoItem.getDescription(), todoItem.getState(), new ArrayList<>())));
+        todoItemsWithSubtasks.keySet().forEach(id -> root.stream().filter(todoItemResponse -> todoItemResponse.itemId().equals(id)).forEach(todoItemResponse -> todoItemResponse.subtasks().addAll(todoItemsWithSubtasks.get(id).subtasks())));
+        return root;
     }
 }

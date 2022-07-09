@@ -76,6 +76,13 @@ public class TodoItem {
         this.userId = userId;
     }
 
+    public TodoItem(String description, TaskState state, LocalDateTime creationDate, Long userId) {
+        this.description = description;
+        this.state = state;
+        this.creationDate = creationDate;
+        this.userId = userId;
+    }
+
     public void addTag(Tag tag) {
         tags.add(tag);
     }
