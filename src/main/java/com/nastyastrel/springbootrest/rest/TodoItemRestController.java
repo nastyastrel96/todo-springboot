@@ -1,5 +1,6 @@
 package com.nastyastrel.springbootrest.rest;
 
+import com.nastyastrel.springbootrest.exception.CircularTasksException;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
 import com.nastyastrel.springbootrest.model.user.User;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 
 @RestController
@@ -51,6 +53,12 @@ public class TodoItemRestController {
     public ResponseEntity<TodoItem> changeToDone(@PathVariable Long number, Principal principal) {
         User user = userService.getAuthenticatedUser(principal);
         return new ResponseEntity<>(todoItemService.changeToDone(number, user.getUserId()), HttpStatus.OK);
+    }
+
+    @PatchMapping("/todos/{itemId}/assignTo/{parentId}")
+    public ResponseEntity<TodoItemResponse> assignSubtask(@PathVariable Long itemId, @PathVariable Long parentId, Principal principal) {
+        User user = userService.getAuthenticatedUser(principal);
+        return new ResponseEntity<>(todoItemService.assignSubTask(itemId, parentId, user.getUserId()), HttpStatus.OK);
     }
 
     @DeleteMapping("/todos/{number}")

@@ -18,4 +18,6 @@ public interface TodoItemService {
     TodoItem changeToDone(Long itemId, Long userId);
 
     List<TodoItemResponse> getTree(Long userId);
+
+    TodoItemResponse assignSubTask(Long itemId, Long parentId, Long userId);
 }

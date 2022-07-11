@@ -1,10 +1,7 @@
 package com.nastyastrel.springbootrest.service.todo;
 
 import com.nastyastrel.springbootrest.cache.RedisConfig;
-import com.nastyastrel.springbootrest.exception.NoSuchIdItemException;
-import com.nastyastrel.springbootrest.exception.NoSuchTagException;
-import com.nastyastrel.springbootrest.exception.NoSuchItemAndTagException;
-import com.nastyastrel.springbootrest.exception.NoWordForFilteringFoundException;
+import com.nastyastrel.springbootrest.exception.*;
 import com.nastyastrel.springbootrest.model.todo.TaskState;
 import com.nastyastrel.springbootrest.model.todo.TodoItem;
 import com.nastyastrel.springbootrest.model.todo.TodoItemListWithNorrisJoke;
@@ -146,5 +143,17 @@ public class TodoItemServiceImpl implements TodoItemService {
         todoItems.stream().filter(todoItem -> todoItem.getParentId() == null).forEach(todoItem -> root.add(new TodoItemResponse(todoItem.getItemId(), todoItem.getDescription(), todoItem.getState(), new ArrayList<>())));
         todoItemsWithSubtasks.keySet().forEach(id -> root.stream().filter(todoItemResponse -> todoItemResponse.itemId().equals(id)).forEach(todoItemResponse -> todoItemResponse.subtasks().addAll(todoItemsWithSubtasks.get(id).subtasks())));
         return root;
+    }
+
+    @Override
+    public TodoItemResponse assignSubTask(Long itemId, Long parentId, Long userId) {
+        if (Objects.equals(itemId, parentId)) {
+            throw new CircularTasksException();
+        }
+        Optional<TodoItem> optionalTodoItem = todoItemRepository.findById(itemId);
+        TodoItem todoItem = optionalTodoItem.orElseThrow(() -> new NoSuchIdItemException(itemId.toString()));
+        todoItem.setParentId(parentId);
+        todoItemRepository.save(todoItem);
+        return getTree(userId).stream().filter(todoItemResponse -> todoItemResponse.itemId().equals(parentId)).findFirst().orElseThrow(() -> new NoSuchIdItemException(itemId.toString()));
     }
 }

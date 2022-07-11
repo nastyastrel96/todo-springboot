@@ -49,4 +49,11 @@ public class TodoExceptionHandler {
         ExceptionResponse response = new ExceptionResponse(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), exception.getMessage());
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler(CircularTasksException.class)
+    public ResponseEntity<ExceptionResponse> handleNoSuchTagException(CircularTasksException exception) {
+        logger.error("TodoItem id and parent's todoItem id should be different", exception);
+        ExceptionResponse response = new ExceptionResponse(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), exception.getMessage());
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    }
 }
